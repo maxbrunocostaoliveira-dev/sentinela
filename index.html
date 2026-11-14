@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENTINELA 10.5</title>
+  <title>SENTINELA 10.6</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body { background: #050811; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -127,10 +127,10 @@
 
   <header>
     <div class="brand">
-      <div class="brand-icon">10.5</div>
+      <div class="brand-icon">10.6</div>
       <div>
-        <div style="font-weight:800; font-size:14px; color:#fff; letter-spacing:0.5px;">SENTINELA 10.5</div>
-        <div style="font-size:11px; color:#94a3b8;">Vetor 512D + Fluxo Óptico + CLAHE + Lote Inteligente (NOME_CPF_ARTIGO)</div>
+        <div style="font-weight:800; font-size:14px; color:#fff; letter-spacing:0.5px;">SENTINELA 10.6</div>
+        <div style="font-size:11px; color:#94a3b8;">Vetor 512D + Anti-Homônimos (Indivíduo 1 vs 2) + Herança Automática de CPF</div>
       </div>
     </div>
 
@@ -164,7 +164,7 @@
         <div class="monitor-subcard">
           <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:800; color:#38bdf8;">
             <span id="plateFormatLabel">PLACA (CARRO/MOTO)</span>
-            <span id="plateConfidenceBadge" style="color:#10b981;">10.5 IA</span>
+            <span id="plateConfidenceBadge" style="color:#10b981;">10.6 IA</span>
           </div>
           <div id="mercosulPlateWidget" class="mercosul-plate">
             <div id="mercosulHeaderBar" class="mercosul-header"><span>MERCOSUL</span><span>BRASIL</span><span>BR</span></div>
@@ -457,8 +457,8 @@
           <img id="iEl" class="hidden" alt="Cena">
           <canvas id="hudCanvas"></canvas>
           <div id="emptyStg" style="padding:45px; text-align:center;">
-            <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">SENTINELA 10.5</div>
-            <p style="font-size:12px; color:#94a3b8; max-width:460px;">Motor 512D + Rastreamento por Fluxo Óptico + Visão Noturna CLAHE + Filtro Anti-Borrão Laplacian + Lote Inteligente (NOME_CPF).</p>
+            <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">SENTINELA 10.6</div>
+            <p style="font-size:12px; color:#94a3b8; max-width:460px;">Motor 512D + Diferenciação Automática de Homônimos (Indivíduo 1 vs Indivíduo 2) + Herança de CPF entre amostras.</p>
           </div>
         </div>
 
@@ -1326,10 +1326,43 @@
     var DEFAULT_VISION_KEY = '';
     var SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbweUcxIRlj_l3S_GwMgCykquMLSeHIQNutlYbNTTP_c0PflXJRuv9WVMRnVrClsqApj/exec';
 
-    // Fatiador Inteligente de Nome de Arquivo: extrai Nome, CPF/RG e Artigo/Observação separados por "_"
-    // Exemplos suportados:
-    // 1) "CARLOS HENRIQUE ROCHA DE ANDRADE_012.345.678-99.png" -> name: "CARLOS HENRIQUE ROCHA DE ANDRADE", doc: "012.345.678-99"
-    // 2) "CARLOS HENRIQUE_01234567899_Art33 Trafico.jpg" -> name: "CARLOS HENRIQUE", doc: "01234567899 • Art33 Trafico"
+    // Normaliza o nome base (ignorando acentos, espaços extras e etiquetas de "[Homônimo #X]")
+    function normalizeBaseName(str) {
+      return String(str || '')
+        .replace(/\[HOM[OÔ]NIMO\s*#\d+\]/gi, '')
+        .replace(/\(HOM[OÔ]NIMO\s*#\d+\)/gi, '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    // Verifica se um texto de documento contém um CPF/RG/Prontuário real (e não apenas "Pasta Drive", "Manual" ou palavras de pose como "frente", "lado")
+    function isRealDocumentValue(docStr) {
+      if (!docStr) return false;
+      var s = String(docStr).trim();
+      if (!s) return false;
+      var upper = s.toUpperCase();
+      var genericLabels = ['PASTA DRIVE', 'MANUAL', 'BANCO', 'RESGATADO', 'CAMERA AO VIVO', 'CÂMERA AO VIVO', 'BIOMETRIA AO VIVO', '-'];
+      if (genericLabels.indexOf(upper) !== -1) return false;
+      // Palavras de pose/ângulo sem números não são documentos
+      if (/^(FRENTE|LADO|PERFIL|DIREITA|ESQUERDA|BONE|OCULOS|FOTO\s*\d*|AMOSTRA\s*\d*|IMG\s*\d*|POSICAO\s*\d*)$/i.test(upper)) {
+        return false;
+      }
+      return true;
+    }
+
+    // Extrai apenas os dígitos principais do CPF/RG (quando houver pelo menos 7 dígitos) para comparar CPFs mesmo com pontuação diferente
+    function extractCleanDocDigits(docStr) {
+      if (!isRealDocumentValue(docStr)) return '';
+      var digits = String(docStr).replace(/[^0-9]/g, '');
+      return digits.length >= 7 ? digits.substring(0, 11) : '';
+    }
+
+    // Fatiador Inteligente de Nome de Arquivo v10.6:
+    // Suporta fotos com CPF ("NOME_012.345.678-99.png"), fotos só com o nome ("NOME (1).png")
+    // e fotos com indicação de pose ("NOME_lado.png" ou "NOME_frente.png") sem confundir pose com CPF!
     function parseSmartFilename(rawFilename) {
       var base = String(rawFilename || '');
       var slashIdx = Math.max(base.lastIndexOf('/'), base.lastIndexOf('\\'));
@@ -1337,19 +1370,29 @@
       var dotIdx = base.lastIndexOf('.');
       if (dotIdx > 0) base = base.substring(0, dotIdx);
 
-      // Remove sufixos numéricos de cópia do sistema operacional como " (1)", " (2)" no final
+      // Remove sufixos numéricos de cópia no final como " (1)", " (2)"
       base = base.replace(/\s*\(\d+\)\s*$/, '').trim();
 
       if (base.indexOf('_') !== -1) {
         var parts = base.split('_').map(function(p) { return p.trim(); }).filter(Boolean);
         var personName = (parts[0] || 'Indivíduo').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
-        var docPart = parts.length > 1 ? parts[1] : 'Pasta Drive';
-        var extraPart = parts.length > 2 ? parts.slice(2).join(' • ') : '';
-        var finalDoc = extraPart ? (docPart + ' • ' + extraPart) : docPart;
+        var docTokens = [];
+
+        for (var i = 1; i < parts.length; i++) {
+          var tk = parts[i];
+          // Se o trecho após "_" for apenas indicação de pose/foto (ex: "_lado", "_frente", "_bone", "_foto2"), ignora para não sujar o CPF
+          if (/^(FRENTE|LADO|PERFIL|DIREITO|ESQUERDO|DIREITA|ESQUERDA|BONE|OCULOS|FOTO\s*\d*|AMOSTRA\s*\d*|IMG\s*\d*)$/i.test(tk)) {
+            continue;
+          }
+          docTokens.push(tk);
+        }
+
+        var finalDoc = docTokens.length > 0 ? docTokens.join(' • ') : 'Pasta Drive';
+        var hasReal = isRealDocumentValue(finalDoc);
         return {
           name: personName,
-          doc: finalDoc || 'Pasta Drive',
-          hasCustomDoc: parts.length > 1
+          doc: hasReal ? finalDoc : 'Pasta Drive',
+          hasCustomDoc: hasReal
         };
       }
 
@@ -1373,17 +1416,20 @@
     function autoFillFromSelectedFiles(e) {
       var fs = e && e.target && e.target.files;
       if (!fs || !fs.length) return;
-      var parsed = parseSmartFilename(fs[0].name);
-      if (parsed.name && !getEl('sName').value.trim()) {
-        getEl('sName').value = parsed.name;
-      }
-      if (parsed.hasCustomDoc && !getEl('sDoc').value.trim()) {
-        getEl('sDoc').value = parsed.doc;
+      for (var i = 0; i < fs.length; i++) {
+        var parsed = parseSmartFilename(fs[i].name);
+        if (parsed.name && !getEl('sName').value.trim()) {
+          getEl('sName').value = parsed.name;
+        }
+        if (parsed.hasCustomDoc && !getEl('sDoc').value.trim()) {
+          getEl('sDoc').value = parsed.doc;
+          break;
+        }
       }
     }
 
     var DEF_P = 'var url = "' + SHEETS_API_URL + '?tipo=PLACA&placa=" + encodeURIComponent(plate) + "&q=" + encodeURIComponent(plate);\nvar res = await fetch(url);\nreturn await res.json();';
-    var DEF_F = 'var url = "' + SHEETS_API_URL + '?tipo=PESSOA&nome=" + encodeURIComponent(person.name || "") + "&cpf=" + encodeURIComponent(person.doc || "") + "&q=" + encodeURIComponent(person.name || "") + "&doc=" + encodeURIComponent(person.doc || "");\nvar res = await fetch(url);\nreturn await res.json();';
+    var DEF_F = 'var cleanName = (person.baseName || person.name || "").replace(/\\s*\\[Hom[oô]nimo\\s*#\\d+\\]/gi, "").trim();\nvar url = "' + SHEETS_API_URL + '?tipo=PESSOA&nome=" + encodeURIComponent(cleanName) + "&cpf=" + encodeURIComponent(person.doc || "") + "&q=" + encodeURIComponent(cleanName) + "&doc=" + encodeURIComponent(person.doc || "");\nvar res = await fetch(url);\nreturn await res.json();';
     var MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
 
     var aiLoaded = false, ssdLoaded = false, aiLoading = false, ocr = null, isBusy = false, plateCloudBusy = false;
@@ -1705,7 +1751,7 @@
 
       loadAdaptiveMemory();
       renderHistory();
-      log('Sentinela 10.5 pronto: Vetor 512D + Fluxo Óptico + CLAHE + Lote Inteligente (NOME_CPF_ARTIGO).', '#10b981');
+      log('Sentinela 10.6 pronto: Vetor 512D + Anti-Homônimos (Indivíduo 1 vs 2) + Herança de CPF entre amostras.', '#10b981');
       initDB();
       refreshCams();
       setTimeout(function() { ensureAIReady(); }, 250);
@@ -1858,9 +1904,9 @@
 
         aiLoaded = true;
         buildMatch();
-        badge.innerText = 'IA 10.5 (512D)';
+        badge.innerText = 'IA 10.6 (512D)';
         badge.style.color = '#10b981';
-        log('Motores 10.5 prontos! Vetor 512D + CLAHE + Fluxo Óptico ativos com ' + catDb.length + ' indivíduo(s).', '#10b981');
+        log('Motores 10.6 prontos! Vetor 512D + Anti-Homônimos + Herança de CPF ativos com ' + catDb.length + ' indivíduo(s).', '#10b981');
       } catch (e) {
         badge.innerText = 'Erro Rede IA';
         log('Aviso IA: ' + e.message, '#fb7185');
@@ -2735,14 +2781,17 @@
       if (isCritico) {
         playCriticalSiren();
         log('🚨 MANDADO DE PRISÃO EM ABERTO: ' + p.name + ' (Doc: ' + orderedFaceData.DOC + ') -> ' + orderedFaceData.SITUACAO, '#ef4444');
-        showTopCriticalBanner('🚨 MANDADO DE PRISÃO EM ABERTO: ' + p.name + ' — ' + orderedFaceData.SITUACAO);
+        showTopCriticalBanner('🚨 MANDADO DE PRISÃO EM ABERTO: ' + p.name + ' (' + orderedFaceData.DOC + ') — ' + orderedFaceData.SITUACAO);
       } else {
         beep(880, 150);
-        log('RECONHECIMENTO FACIAL POSITIVO: ' + p.name + ' (' + pct + '%) — Sem Mandado', '#10b981');
+        log('RECONHECIMENTO FACIAL POSITIVO: ' + p.name + ' [' + orderedFaceData.DOC + '] (' + pct + '%) — Sem Mandado', '#10b981');
       }
 
-      spawnCard({ f: true, critico: isCritico, t: p.name, s: isCritico ? '🚨 MANDADO DE PRISÃO EM ABERTO' : ('Biometria Confirmada: ' + pct + '%'), i: p.photoDataUrl, d: orderedFaceData });
-      addHistory({ type: 'FACE', critico: isCritico, title: p.name, subtitle: isCritico ? orderedFaceData.SITUACAO : ('Sem Restrição (' + pct + '%)'), img: p.photoDataUrl, time: orderedFaceData.HORA });
+      var subCardInfo = isCritico
+        ? ('🚨 MANDADO • ' + orderedFaceData.DOC)
+        : ('Biometria: ' + pct + '% • ' + orderedFaceData.DOC);
+      spawnCard({ f: true, critico: isCritico, t: p.name, s: subCardInfo, i: p.photoDataUrl, d: orderedFaceData });
+      addHistory({ type: 'FACE', critico: isCritico, title: p.name + ' (' + orderedFaceData.DOC + ')', subtitle: isCritico ? orderedFaceData.SITUACAO : ('Sem Restrição (' + pct + '%)'), img: p.photoDataUrl, time: orderedFaceData.HORA });
     }
 
     async function trigPl(pl, cf, orig, rw, vehModelCor) {
@@ -3003,19 +3052,24 @@
               var baseVec = extractCore128FromAny(new Float32Array(vec));
               var base512 = build512DHyperDescriptor(baseVec, null, null);
               var rawList = it.descriptors ? it.descriptors.map(function(d) { return extractCore128FromAny(new Float32Array(d)); }) : [baseVec];
-              // Purifica automaticamente amostras secundárias que divirjam > 0.34 da foto original de cadastro
+              // Preserva amostras de frente e perfil do mesmo indivíduo (até 0.56)
               var cleanDescArr = [baseVec];
               var clean512Arr = [base512];
               for (var k = 1; k < rawList.length; k++) {
                 var cand512 = build512DHyperDescriptor(rawList[k], null, null);
-                if (compute512DEuclideanDistance(base512, cand512) <= 0.34) {
+                if (compute512DEuclideanDistance(base512, cand512) <= 0.56) {
                   cleanDescArr.push(rawList[k]);
                   clean512Arr.push(cand512);
                 }
               }
               var centroid512 = computeCentroidDescriptor(clean512Arr);
               catDb.push({
-                id: it.id, name: it.name, doc: it.doc || 'Banco', photoDataUrl: it.photoDataUrl || '',
+                id: it.id,
+                name: it.name,
+                baseName: it.baseName || normalizeBaseName(it.name),
+                homonymIndex: it.homonymIndex || 1,
+                doc: it.doc || 'Banco',
+                photoDataUrl: it.photoDataUrl || '',
                 desc: baseVec,
                 desc512: base512,
                 descriptors: cleanDescArr,
@@ -3032,32 +3086,180 @@
       } catch (e) {}
     }
 
+    // Calcula a menor distância biométrica entre uma nova foto e TODAS as amostras já salvas de um candidato
+    function computeCandidateBioMatch(coreDesc128, hyperDesc512, candidate) {
+      var minCore128 = 999;
+      var min512 = 999;
+      var maxCos = 0;
+
+      var cand128List = (candidate.descriptors && candidate.descriptors.length) ? candidate.descriptors : [candidate.desc];
+      for (var i = 0; i < cand128List.length; i++) {
+        if (!cand128List[i]) continue;
+        var d128 = faceapi.euclideanDistance(coreDesc128, extractCore128FromAny(cand128List[i]));
+        if (d128 < minCore128) minCore128 = d128;
+      }
+      if (candidate.centroid) {
+        var c128 = faceapi.euclideanDistance(coreDesc128, extractCore128FromAny(candidate.centroid));
+        if (c128 < minCore128) minCore128 = c128;
+      }
+
+      var cand512List = (candidate.descriptors512 && candidate.descriptors512.length)
+        ? candidate.descriptors512
+        : [candidate.desc512 || build512DHyperDescriptor(candidate.desc, null, null)];
+      for (var j = 0; j < cand512List.length; j++) {
+        if (!cand512List[j]) continue;
+        var d512 = compute512DEuclideanDistance(hyperDesc512, cand512List[j]);
+        var cos = computeCosineSimilarity(hyperDesc512, cand512List[j]);
+        if (d512 < min512) min512 = d512;
+        if (cos > maxCos) maxCos = cos;
+      }
+      if (candidate.centroid512) {
+        var c512 = compute512DEuclideanDistance(hyperDesc512, candidate.centroid512);
+        var cCos = computeCosineSimilarity(hyperDesc512, candidate.centroid512);
+        if (c512 < min512) min512 = c512;
+        if (cCos > maxCos) maxCos = cCos;
+      }
+
+      return {
+        minCore128: minCore128,
+        min512: min512,
+        maxCos: maxCos,
+        effectiveDist: Math.min(minCore128, min512)
+      };
+    }
+
+    // Motor de Cadastro Inteligente v10.6:
+    // 1) Se apenas 1 amostra tiver CPF e as demais tiverem apenas o NOME, agrupa no mesmo indivíduo e preserva/herda o CPF!
+    // 2) Se houver 2 indivíduos diferentes com o mesmo nome (Homônimos: Indivíduo 1 vs Indivíduo 2), separa pela biometria ou CPF
+    //    e direciona cada nova foto sem CPF para o homônimo biometricamente compatível!
     async function saveP(p) {
       var coreDesc = extractCore128FromAny(p.desc);
       var hyper512 = p.desc512 || build512DHyperDescriptor(coreDesc, null, null);
       p.desc = coreDesc;
       p.desc512 = hyper512;
 
-      var existing = catDb.find(function(i) { return i.name.toLowerCase() === p.name.toLowerCase(); });
-      if (existing && p.desc) {
-        if (!existing.descriptors) existing.descriptors = [existing.desc];
-        if (!existing.descriptors512) existing.descriptors512 = [existing.desc512 || build512DHyperDescriptor(existing.desc, null, null)];
-        if (existing.descriptors.length < 18) {
-          existing.descriptors.push(coreDesc);
-          existing.descriptors512.push(hyper512);
+      var cleanDisplayBaseName = String(p.name || 'Indivíduo')
+        .replace(/\s*\[Hom[oô]nimo\s*#\d+\]/gi, '')
+        .trim();
+      var normName = normalizeBaseName(cleanDisplayBaseName);
+      var incomingHasRealDoc = isRealDocumentValue(p.doc);
+      var incomingCpfDigits = extractCleanDocDigits(p.doc);
+
+      // Busca TODOS os indivíduos já cadastrados que possuem exatamente o mesmo nome base (Indivíduo 1, Indivíduo 2, etc.)
+      var sameNameCandidates = catDb.filter(function(item) {
+        return normalizeBaseName(item.baseName || item.name) === normName;
+      });
+
+      var matchedTarget = null;
+      var bestBioScore = 999;
+
+      for (var i = 0; i < sameNameCandidates.length; i++) {
+        var cand = sameNameCandidates[i];
+        var candHasRealDoc = isRealDocumentValue(cand.doc);
+        var candCpfDigits = extractCleanDocDigits(cand.doc);
+
+        // Regra 1: Se AMBOS possuem números de CPF/RG definidos:
+        if (incomingCpfDigits && candCpfDigits) {
+          if (incomingCpfDigits === candCpfDigits) {
+            // Mesmo CPF confirmado -> É garantidamente o mesmo indivíduo!
+            matchedTarget = cand;
+            bestBioScore = 0;
+            break;
+          } else {
+            // CPFs diferentes -> São homônimos confirmados (Indivíduo 1 vs Indivíduo 2), jamais fundir!
+            continue;
+          }
         }
-        existing.desc = coreDesc;
-        existing.desc512 = hyper512;
-        existing.centroid512 = computeCentroidDescriptor(existing.descriptors512);
-        existing.centroid = extractCore128FromAny(existing.centroid512);
-        if (p.doc && p.doc !== 'Manual' && p.doc !== 'Pasta Drive') existing.doc = p.doc;
-        existing.photoDataUrl = p.photoDataUrl || existing.photoDataUrl;
-        p = existing;
+
+        // Regra 2: Apenas UMA das fotos tem CPF (ou nenhuma tem CPF).
+        // Usa a Biometria (512D + Core 128D) para decidir se é outra pose do mesmo indivíduo (frente/lado) ou um homônimo diferente!
+        var bio = computeCandidateBioMatch(coreDesc, hyper512, cand);
+        // Mesma pessoa (mesmo em ângulo/lado/boné) fica <= 0.565; pessoas diferentes (homônimos) ficam > 0.58
+        var isBiometricallySamePerson = (bio.effectiveDist <= 0.565 || bio.minCore128 <= 0.575 || bio.maxCos >= 0.835);
+
+        if (isBiometricallySamePerson && bio.effectiveDist < bestBioScore) {
+          bestBioScore = bio.effectiveDist;
+          matchedTarget = cand;
+        }
+      }
+
+      if (matchedTarget && p.desc) {
+        // Funde a amostra no indivíduo compatível encontrado
+        if (!matchedTarget.descriptors) matchedTarget.descriptors = [matchedTarget.desc];
+        if (!matchedTarget.descriptors512) {
+          matchedTarget.descriptors512 = [matchedTarget.desc512 || build512DHyperDescriptor(matchedTarget.desc, null, null)];
+        }
+
+        // Evita duplicar exatamente o mesmo arquivo se for subido duas vezes
+        var isDuplicateSample = false;
+        for (var s = 0; s < matchedTarget.descriptors512.length; s++) {
+          if (compute512DEuclideanDistance(hyper512, matchedTarget.descriptors512[s]) < 0.04) {
+            isDuplicateSample = true;
+            break;
+          }
+        }
+
+        if (!isDuplicateSample && matchedTarget.descriptors.length < 20) {
+          matchedTarget.descriptors.push(coreDesc);
+          matchedTarget.descriptors512.push(hyper512);
+        }
+
+        matchedTarget.centroid512 = computeCentroidDescriptor(matchedTarget.descriptors512);
+        matchedTarget.centroid = extractCore128FromAny(matchedTarget.centroid512);
+
+        // Herança Inteligente de CPF:
+        // Se o cadastro antigo tinha apenas o nome ("Pasta Drive" / "Manual") e esta amostra trouxe o CPF, atualiza com o CPF!
+        // Se o cadastro antigo JÁ tinha o CPF e esta amostra veio só com o nome, preserva o CPF existente intacto!
+        if (incomingHasRealDoc) {
+          if (!isRealDocumentValue(matchedTarget.doc) || p.doc.length > matchedTarget.doc.length) {
+            matchedTarget.doc = p.doc;
+          }
+          // Se esta amostra é a que possui o CPF oficial, usa a foto dela como miniatura principal
+          if (p.photoDataUrl) matchedTarget.photoDataUrl = p.photoDataUrl;
+        } else if (!matchedTarget.photoDataUrl && p.photoDataUrl) {
+          matchedTarget.photoDataUrl = p.photoDataUrl;
+        }
+
+        p = matchedTarget;
       } else {
+        // Nenhuma pessoa compatível: ou é o Indivíduo #1 com esse nome, ou é um HOMÔNIMO (Indivíduo #2, #3...)
+        var homonymNum = sameNameCandidates.length + 1;
+        p.baseName = cleanDisplayBaseName;
+        p.homonymIndex = homonymNum;
+
+        if (homonymNum > 1) {
+          // Se o Indivíduo #1 ainda não tinha a tag visual [Homônimo #1], adiciona para diferenciar claramente Indivíduo 1 e Indivíduo 2
+          var firstHomonym = sameNameCandidates[0];
+          if (firstHomonym && firstHomonym.name.indexOf('[Homônimo') === -1) {
+            firstHomonym.homonymIndex = 1;
+            firstHomonym.baseName = cleanDisplayBaseName;
+            firstHomonym.name = cleanDisplayBaseName + ' [Homônimo #1]';
+            if (db) {
+              try {
+                db.transaction('catalogados', 'readwrite').objectStore('catalogados').put({
+                  id: firstHomonym.id,
+                  name: firstHomonym.name,
+                  baseName: firstHomonym.baseName,
+                  homonymIndex: 1,
+                  doc: firstHomonym.doc,
+                  photoDataUrl: firstHomonym.photoDataUrl,
+                  descriptor: Array.from(firstHomonym.desc),
+                  descriptors: (firstHomonym.descriptors || [firstHomonym.desc]).map(function(d) { return Array.from(extractCore128FromAny(d)); })
+                });
+              } catch (e) {}
+            }
+          }
+          p.name = cleanDisplayBaseName + ' [Homônimo #' + homonymNum + ']';
+          log('👥 Homônimo diferenciado pela biometria/CPF: criado "' + p.name + '" separado de "' + firstHomonym.name + '".', '#fcd34d');
+        } else {
+          p.name = cleanDisplayBaseName;
+        }
+
         if (!p.descriptors && p.desc) p.descriptors = [coreDesc];
         if (!p.descriptors512) p.descriptors512 = p.descriptors.map(function(v) { return build512DHyperDescriptor(v, null, null); });
         p.centroid512 = computeCentroidDescriptor(p.descriptors512);
         p.centroid = extractCore128FromAny(p.centroid512);
+
         var idx = catDb.findIndex(function(i) { return i.id === p.id; });
         if (idx >= 0) catDb[idx] = p; else catDb.push(p);
       }
@@ -3065,7 +3267,12 @@
       if (db) {
         try {
           db.transaction('catalogados', 'readwrite').objectStore('catalogados').put({
-            id: p.id, name: p.name, doc: p.doc, photoDataUrl: p.photoDataUrl,
+            id: p.id,
+            name: p.name,
+            baseName: p.baseName || cleanDisplayBaseName,
+            homonymIndex: p.homonymIndex || 1,
+            doc: p.doc,
+            photoDataUrl: p.photoDataUrl,
             descriptor: Array.from(p.desc),
             descriptors: (p.descriptors || [p.desc]).map(function(d) { return Array.from(extractCore128FromAny(d)); })
           });
@@ -3179,12 +3386,23 @@
       await ensureAIReady();
       var fs = Array.from(e.target.files).filter(function(f) { return f.type.startsWith('image/'); });
       if (!fs.length) return;
+
+      // Ordenação Inteligente: Processa PRIMEIRO os arquivos que possuem CPF no nome (ex: NOME_CPF.png)
+      // e em seguida as demais amostras que têm apenas o nome (ex: NOME (1).png), garantindo vínculo imediato do CPF!
+      fs.sort(function(a, b) {
+        var pa = parseSmartFilename(a.name);
+        var pb = parseSmartFilename(b.name);
+        if (pa.hasCustomDoc && !pb.hasCustomDoc) return -1;
+        if (!pa.hasCustomDoc && pb.hasCustomDoc) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
       getEl('bulkProg').classList.remove('hidden');
       var withDocCount = 0;
       for (var i = 0; i < fs.length; i++) {
         var parsed = parseSmartFilename(fs[i].name);
         if (parsed.hasCustomDoc) withDocCount++;
-        getEl('bulkTxt').innerText = parsed.name + (parsed.hasCustomDoc ? (' [' + parsed.doc + ']') : '');
+        getEl('bulkTxt').innerText = parsed.name + (parsed.hasCustomDoc ? (' [' + parsed.doc + ']') : ' [Amostra]');
         getEl('bulkCnt').innerText = (i + 1) + '/' + fs.length;
         var b = await getBio(fs[i]);
         if (b) {
@@ -3202,19 +3420,29 @@
       }
       buildMatch(); renderDB();
       getEl('bulkProg').classList.add('hidden');
-      log('Pasta facial importada em 512D! (' + fs.length + ' fotos processadas, ' + withDocCount + ' com CPF/Prontuário extraído do nome do arquivo).', '#10b981');
+      log('Pasta facial importada em 512D! (' + fs.length + ' fotos agrupadas em ' + catDb.length + ' indivíduo(s), com herança automática de CPF e separação de homônimos).', '#10b981');
     }
 
     async function addSingle() {
       await ensureAIReady();
       var typedName = getEl('sName').value.trim();
       var typedDoc = getEl('sDoc').value.trim();
-      var fs = getEl('sFile').files;
+      var fs = Array.from(getEl('sFile').files || []);
       if (!fs.length) { log('Escolha pelo menos uma foto.', '#fb7185'); return; }
+
+      // Ordena para que a foto que tem CPF no nome seja processada primeiro
+      fs.sort(function(a, b) {
+        var pa = parseSmartFilename(a.name);
+        var pb = parseSmartFilename(b.name);
+        if (pa.hasCustomDoc && !pb.hasCustomDoc) return -1;
+        if (!pa.hasCustomDoc && pb.hasCustomDoc) return 1;
+        return 0;
+      });
+
       var savedCount = 0;
       for (var i = 0; i < fs.length; i++) {
         var parsed = parseSmartFilename(fs[i].name);
-        var finalName = (fs.length === 1 && typedName) ? typedName : (parsed.name || typedName);
+        var finalName = typedName || parsed.name;
         var finalDoc = typedDoc || (parsed.hasCustomDoc ? parsed.doc : 'Manual');
         if (!finalName) continue;
         var b = await getBio(fs[i]);
@@ -3228,7 +3456,7 @@
       getEl('sName').value = '';
       getEl('sDoc').value = '';
       resetFaceLockManual();
-      log('Biometria 512D salva com Nome e CPF vinculados!', '#10b981');
+      log('Biometria 512D salva com agrupamento de amostras e proteção anti-homônimos!', '#10b981');
     }
 
     function renderDB() {
@@ -3242,8 +3470,11 @@
       for (var i = 0; i < f.length; i++) {
         var p = f[i], row = document.createElement('div');
         var samples = p.descriptors ? p.descriptors.length : 1;
-        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px; border-radius:6px;';
-        row.innerHTML = '<div style="display:flex; gap:8px; align-items:center; overflow:hidden;"><img src="' + escapeHtml(p.photoDataUrl) + '" style="width:32px; height:32px; border-radius:4px; object-fit:cover;"><div style="font-size:12px; font-weight:700; color:#fff;">' + escapeHtml(p.name) + '<div style="font-size:10px; color:#10b981;">' + samples + ' amostra(s) IA • ' + escapeHtml(p.doc) + '</div></div></div><button type="button" style="background:none; color:#fb7185; padding:4px;" onclick="remP(\'' + escapeHtml(p.id) + '\')">X</button>';
+        var isHomonym = p.name.indexOf('[Homônimo') !== -1;
+        var hasCpf = isRealDocumentValue(p.doc);
+        var borderCol = isHomonym ? 'border-left:3px solid #facc15;' : (hasCpf ? 'border-left:3px solid #10b981;' : 'border-left:3px solid #38bdf8;');
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px; border-radius:6px; ' + borderCol;
+        row.innerHTML = '<div style="display:flex; gap:8px; align-items:center; overflow:hidden;"><img src="' + escapeHtml(p.photoDataUrl) + '" style="width:32px; height:32px; border-radius:4px; object-fit:cover;"><div style="font-size:12px; font-weight:700; color:#fff;">' + escapeHtml(p.name) + '<div style="font-size:10px; color:' + (hasCpf ? '#10b981' : '#94a3b8') + ';">' + samples + ' amostra(s) IA • CPF/Doc: <strong style="color:#fcd34d;">' + escapeHtml(p.doc) + '</strong></div></div></div><button type="button" style="background:none; color:#fb7185; padding:4px;" onclick="remP(\'' + escapeHtml(p.id) + '\')">X</button>';
         bx.appendChild(row);
       }
     }
