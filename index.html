@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="pt-BR" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENTINELA 10.4</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background: #050811; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    button, label, select, input, textarea { font-family: inherit; font-size: 12px; }
+    button, .btn-label { cursor: pointer; border: none; border-radius: 8px; font-weight: 700; transition: 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    button:active, .btn-label:active { transform: scale(0.98); }
+    .hidden { display: none !important; }
+
+    header { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 30; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon { width: 34px; height: 34px; border-radius: 8px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #10b981; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+    .badge-top { background: #1e293b; border: 1px solid #334155; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: #cbd5e1; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+
+    .workspace { flex: 1; display: flex; overflow: hidden; }
+    aside { width: 380px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 20; flex-shrink: 0; height: 100%; overflow: hidden; }
+    .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid #1e293b; background: #090d16; flex-shrink: 0; }
+    .nav-btn { background: transparent; color: #94a3b8; padding: 9px 4px; border-radius: 0; border-bottom: 2px solid transparent; font-size: 11px; }
+    .nav-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(30,41,59,0.5); }
+
+    .dual-monitor-box { padding: 8px 10px; background: #060913; border-bottom: 1px solid #1e293b; display: grid; grid-template-columns: 1.18fr 0.82fr; gap: 8px; align-items: stretch; flex-shrink: 0; }
+    .monitor-subcard { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; }
+    .mercosul-plate { background: #ffffff; color: #0f172a; border: 2px solid #1e293b; border-radius: 5px; width: 100%; margin: 3px 0; overflow: hidden; font-family: 'Courier New', monospace; transition: 0.2s; }
+    .mercosul-plate.cinza-plate { background: #cbd5e1; border-color: #475569; }
+    .mercosul-header { background: #003399; color: #ffffff; font-size: 8px; font-weight: 800; padding: 1px 6px; display: flex; justify-content: space-between; letter-spacing: 1px; }
+    .mercosul-plate.cinza-plate .mercosul-header { background: #334155; color: #e2e8f0; }
+    .mercosul-chars { text-align: center; font-size: 18px; font-weight: 900; letter-spacing: 2px; padding: 2px 0; color: #0f172a; line-height: 1.1; }
+    .mercosul-chars.two-lines { font-size: 14px; letter-spacing: 3px; padding: 2px 0; }
+    .face-preview-box { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .face-thumb { width: 42px; height: 42px; border-radius: 6px; background: #050811; border: 1px solid #10b981; object-fit: cover; flex-shrink: 0; }
+
+    .tab-pane { padding: 8px 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 7px; min-height: 0; }
+    .card-panel { background: rgba(30,41,59,0.45); border: 1px solid #1e293b; border-radius: 10px; padding: 7px 9px; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+    .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .mode-btn { background: #1e293b; color: #cbd5e1; padding: 6px 4px; border: 1px solid #334155; font-size: 11px; }
+    .mode-btn.active { background: #0284c7; color: #ffffff; border-color: #38bdf8; }
+
+    .bottom-left-history-dock {
+      background: #060913;
+      border-top: 2px solid #1e293b;
+      padding: 8px 10px;
+      height: 195px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 25;
+    }
+
+    input[type="text"], input[type="password"], select, textarea { width: 100%; background: #050811; border: 1px solid #334155; color: #ffffff; padding: 5px 8px; border-radius: 6px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+
+    .btn-primary { background: #0284c7; color: #fff; padding: 6px 10px; }
+    .btn-primary:hover { background: #0369a1; }
+    .btn-success { background: #059669; color: #fff; padding: 7px 10px; }
+    .btn-success:hover { background: #047857; }
+    .btn-danger { background: rgba(225,29,72,0.2); color: #fda4af; border: 1px solid rgba(244,63,94,0.3); padding: 6px 10px; }
+    .btn-warn { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); padding: 6px 10px; }
+
+    main { flex: 1; display: flex; flex-direction: column; background: #03060c; position: relative; overflow: hidden; }
+    .top-strip { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 6px 12px; display: flex; align-items: center; gap: 10px; min-height: 62px; overflow-x: auto; }
+    .stage-area { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; overflow: hidden; gap: 8px; }
+    .media-box { position: relative; display: inline-flex; align-items: center; justify-content: center; max-width: 100%; max-height: 100%; border: 1px solid rgba(56,189,248,0.35); border-radius: 10px; overflow: hidden; background: #000; }
+    video, #iEl { max-height: 62vh; max-width: 100%; object-fit: contain; display: block; }
+    #hudCanvas { position: absolute; top: 0; left: 0; z-index: 10; cursor: crosshair; }
+
+    .video-tactical-bar {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 25;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .video-tactical-bar button {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 5px 9px;
+      font-size: 11px;
+      border-radius: 6px;
+    }
+    .video-tactical-bar button:hover {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .speed-pill {
+      background: #060913;
+      border: 1px solid #10b981;
+      color: #10b981;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 900;
+      font-size: 11px;
+    }
+
+    .hud-overlay-list { position: absolute; top: 10px; right: 10px; width: 330px; max-height: 65vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
+    .hud-card { background: rgba(15,23,42,0.95); border: 1px solid #334155; border-left: 4px solid #facc15; border-radius: 10px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+    .hud-card.face { border-left-color: #10b981; }
+
+    footer { height: 95px; background: #0f172a; border-top: 1px solid #1e293b; padding: 6px 12px; display: flex; flex-direction: column; z-index: 20; }
+    .console-log { flex: 1; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 11px; color: #cbd5e1; display: flex; flex-direction: column; gap: 3px; }
+
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.82); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+    .modal-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; max-width: 560px; width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .history-box::-webkit-scrollbar { width: 4px; }
+    .history-box::-webkit-scrollbar-track { background: transparent; }
+    .history-box::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">10.4</div>
+      <div>
+        <div style="font-weight:800; font-size:14px; color:#fff; letter-spacing:0.5px;">SENTINELA 10.4</div>
+        <div style="font-size:11px; color:#94a3b8;">Vetor 512D + Fluxo Óptico + Visão Noturna CLAHE + Filtro Laplacian + Crop Contextual 15%</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <div class="badge-top">Rostos na Cena: <strong id="faceSceneCount" style="color:#10b981;">0</strong></div>
+      <div class="badge-top">Placas Lidas: <strong id="plateSceneCount" style="color:#facc15;">0</strong></div>
+      <div class="badge-top">Banco: <strong id="dbCount" style="color:#38bdf8;">0</strong></div>
+      <div class="badge-top">Memória IA: <strong id="aiLearnedCount" style="color:#a78bfa;">0</strong></div>
+      <div id="aiStatusBadge" class="badge-top" style="color:#38bdf8; border-color:#0284c7;">IA: Iniciando...</div>
+      <button type="button" class="badge-top" onclick="exportDB()">Backup</button>
+      <label class="badge-top btn-label">
+        Restaurar
+        <input type="file" accept=".json" class="hidden" onchange="importDB(event)">
+      </label>
+      <button type="button" class="btn-success" style="padding:5px 10px;" onclick="toggleModal('scriptModal')">APIs & Chave</button>
+      <button type="button" class="badge-top" style="background:rgba(244,63,94,0.15); color:#fda4af; border-color:rgba(244,63,94,0.35);" onclick="clearAllCards()">Limpar Cards</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside>
+      <div class="nav-tabs">
+        <button type="button" id="btn_tabPatrulha" class="nav-btn active" onclick="switchTab('tabPatrulha')">1. Operação</button>
+        <button type="button" id="btn_tabConsulta" class="nav-btn" onclick="switchTab('tabConsulta')">2. Consulta</button>
+        <button type="button" id="btn_tabBanco" class="nav-btn" onclick="switchTab('tabBanco')">3. Banco Facial</button>
+        <button type="button" id="btn_tabMotor" class="nav-btn" onclick="switchTab('tabMotor')">4. Ajustes</button>
+      </div>
+
+      <!-- MOSTRADOR DUPLO 50/50 -->
+      <div class="dual-monitor-box">
+        <div class="monitor-subcard">
+          <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:800; color:#38bdf8;">
+            <span id="plateFormatLabel">PLACA (CARRO/MOTO)</span>
+            <span id="plateConfidenceBadge" style="color:#10b981;">10.4 IA</span>
+          </div>
+          <div id="mercosulPlateWidget" class="mercosul-plate">
+            <div id="mercosulHeaderBar" class="mercosul-header"><span>MERCOSUL</span><span>BRASIL</span><span>BR</span></div>
+            <div id="visualPlateCharacters" class="mercosul-chars">-------</div>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; display:flex; justify-content:space-between;">
+            <span>Padrão:</span>
+            <span id="rawOcrCharacters" style="color:#fcd34d; font-family:monospace; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:125px;">Aguardando</span>
+          </div>
+        </div>
+
+        <div class="monitor-subcard">
+          <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:800; color:#10b981;">
+            <span>BIOMETRIA 512D</span>
+            <span id="faceConfidenceBadge" style="color:#10b981;">512D HD</span>
+          </div>
+          <div class="face-preview-box">
+            <canvas id="lastFaceCanvas" width="48" height="48" class="face-thumb"></canvas>
+            <div style="overflow:hidden;">
+              <div id="lastFaceName" style="font-size:11px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Aguardando</div>
+              <div id="lastFaceSub" style="font-size:9px; color:#94a3b8;">CLAHE + Fluxo Óptico</div>
+            </div>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; display:flex; justify-content:space-between;">
+            <span>Nitidez/Status:</span>
+            <span id="faceMatchStatusText" style="color:#10b981; font-weight:700;">512D Ativo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA 1: OPERAÇÃO -->
+      <div id="tabPatrulha" class="tab-pane">
+        <div class="mode-grid">
+          <button type="button" id="modeBtn_usb" class="mode-btn active" onclick="setMode('usb')">Câmera USB / Drone</button>
+          <button type="button" id="modeBtn_ip" class="mode-btn" onclick="setMode('ip')">Celular IP / Drone</button>
+          <button type="button" id="modeBtn_file" class="mode-btn" onclick="setMode('file')">Galeria</button>
+        </div>
+
+        <div id="panel_usb" class="card-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700;">Câmera USB / Placa HDMI Drone</span>
+            <button type="button" class="badge-top" style="padding:2px 8px;" onclick="unlockCams()">Detectar</button>
+          </div>
+          <select id="cameraSelect"><option value="">Clique em Detectar...</option></select>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-success" style="flex:1;" onclick="startUsb()">Iniciar Captura Automática</button>
+            <button type="button" class="btn-danger" onclick="stopMedia()">Parar</button>
+          </div>
+        </div>
+
+        <div id="panel_ip" class="card-panel hidden">
+          <span style="font-weight:700;">Stream Celular IP / ScreenStream Drone</span>
+          <input type="text" id="ipCamUrl" value="http://192.168.0.127:8080/shot.jpg">
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-primary" style="flex:1;" onclick="startIp()">Conectar Captura Automática</button>
+            <button type="button" class="btn-danger" onclick="stopMedia()">Parar</button>
+          </div>
+        </div>
+
+        <div id="panel_file" class="card-panel hidden">
+          <label class="btn-primary btn-label" style="padding:9px; text-align:center;">
+            Carregar Foto ou Vídeo (Carro ou Moto)
+            <input type="file" accept="image/*,video/*" class="hidden" onchange="handleFile(event)">
+          </label>
+          <div id="vidCtrlOp" class="hidden" style="display:flex; flex-direction:column; gap:5px; margin-top:4px;">
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="seekLoadedVideo(-5)">⏪ -5s</button>
+              <button type="button" class="btn-primary" style="flex:1.2; padding:5px;" onclick="togglePlayLoadedVideo()">⏯️ Play/Pausa</button>
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="seekLoadedVideo(5)">⏩ +5s</button>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="changeVideoSpeed(-0.25)">🐢 - Vel</button>
+              <span id="speedBadgeOp" class="speed-pill">1.00x</span>
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="changeVideoSpeed(0.25)">⚡ + Vel</button>
+              <button type="button" class="btn-success" style="flex:1; padding:5px;" onclick="replayLoadedVideo()">🔄 Rever</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-panel" style="border-color:rgba(56,189,248,0.5); background:rgba(2,132,199,0.12);">
+          <span style="font-size:11px; font-weight:700; color:#38bdf8;">Vincular Meu Rosto da Câmera Ao Vivo:</span>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="quickEnrollName" placeholder="Seu nome (ou usa o cadastro atual)">
+            <button type="button" class="btn-success" style="flex-shrink:0;" onclick="quickEnrollLive()">Vincular Agora</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:#38bdf8;">
+            <span>RECORTE DA CHAPA (1 LINHA CARRO / 2 LINHAS MOTO)</span>
+            <span id="scanStatus" style="color:#10b981;">AUTO ATIVO</span>
+          </div>
+          <canvas id="lprDebugCanvas" style="width:100%; height:44px; background:#fff; border-radius:6px; border:1px solid #38bdf8; object-fit:contain;"></canvas>
+        </div>
+
+        <button type="button" class="btn-success" style="width:100%; padding:8px;" onclick="runFullDualScan()">
+          FORÇAR LEITURA DE ROSTOS E PLACAS AGORA
+        </button>
+
+        <!-- HISTÓRICO INTERNO DA ABA OPERAÇÃO -->
+        <div class="card-panel" style="flex:1; min-height:85px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; color:#38bdf8; font-size:10px;">Checagens na Operação</span>
+            <button type="button" style="background:none; color:#94a3b8; font-size:10px;" onclick="clearHistory()">Limpar</button>
+          </div>
+          <div id="histOp" class="history-box" style="display:flex; flex-direction:column; gap:5px; overflow-y:auto; flex:1;"></div>
+        </div>
+      </div>
+
+      <!-- ABA 2: CONSULTA -->
+      <div id="tabConsulta" class="tab-pane hidden">
+        <div class="card-panel" style="border-color:rgba(56,189,248,0.4);">
+          <span style="font-weight:700; color:#38bdf8;">Averiguação Automática</span>
+          <p style="font-size:11px; color:#94a3b8;">Selecione foto ou vídeo: o sistema valida apenas placas reais visíveis na cena e aprende com cada consulta:</p>
+          <label class="btn-primary btn-label" style="padding:10px;">
+            Escolher Foto ou Vídeo para Averiguação
+            <input type="file" accept="image/*,video/*" class="hidden" onchange="handleInvestigate(event)">
+          </label>
+          <div id="videoReplayControls" class="hidden" style="display:flex; flex-direction:column; gap:5px; margin-top:4px;">
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="seekLoadedVideo(-5)">⏪ -5s</button>
+              <button type="button" class="btn-primary" style="flex:1.2; padding:5px;" onclick="togglePlayLoadedVideo()">⏯️ Play/Pausa</button>
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="seekLoadedVideo(5)">⏩ +5s</button>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="changeVideoSpeed(-0.25)">🐢 - Vel</button>
+              <span id="speedBadgeCons" class="speed-pill">1.00x</span>
+              <button type="button" class="badge-top" style="flex:1; padding:5px;" onclick="changeVideoSpeed(0.25)">⚡ + Vel</button>
+              <button type="button" class="btn-success" style="flex:1; padding:5px;" onclick="replayLoadedVideo()">🔄 Rever</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <span style="font-weight:700;">Consultar Placa Manual na Planilha</span>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="manPlate" maxlength="8" placeholder="Ex: BRA2E19, FBI5551, NOP4567" style="text-transform:uppercase; font-family:monospace;">
+            <button type="button" class="btn-primary" onclick="searchPlate()">Consultar</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <span style="font-weight:700;">Consultar Indivíduo na Planilha</span>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="manPerson" placeholder="Nome ou CPF...">
+            <button type="button" class="btn-success" onclick="searchPerson()">Buscar</button>
+          </div>
+        </div>
+
+        <!-- PAINEL DE BUSCA REVERSA FACIAL 1:N (RANKING TOP-5 VETORIAL: COSSENO + EUCLIDIANA) -->
+        <div class="card-panel" style="border-color:rgba(167,139,250,0.45); background:rgba(15,23,42,0.75);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; color:#c4b5fd; font-size:11px;">🧬 Busca Reversa Vetorial (Top-5 Embeddings 512D)</span>
+            <span id="reverseSearchMeta" style="font-size:9px; color:#10b981; font-family:monospace;">512D L2 + Cos</span>
+          </div>
+          <div id="reverseSearchRankingBox" class="history-box" style="display:flex; flex-direction:column; gap:5px; max-height:145px; overflow-y:auto;">
+            <div style="font-size:10px; color:#64748b; font-style:italic;">Carregue uma foto/vídeo ou aponte a câmera: o ranking matemático 512D (Distância Euclidiana + Similaridade de Cosseno + Orelha/Queixo) aparecerá aqui.</div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO INTERNO DA ABA CONSULTA -->
+        <div class="card-panel" style="flex:1; min-height:95px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; color:#38bdf8; font-size:10px;">Checagens na Consulta</span>
+            <button type="button" style="background:none; color:#94a3b8; font-size:10px;" onclick="clearHistory()">Limpar</button>
+          </div>
+          <div id="histCons" class="history-box" style="display:flex; flex-direction:column; gap:5px; overflow-y:auto; flex:1;"></div>
+        </div>
+      </div>
+
+      <!-- ABA 3: BANCO FACIAL -->
+      <div id="tabBanco" class="tab-pane hidden">
+        <div class="card-panel" style="border-color:rgba(16,185,129,0.5);">
+          <span style="font-weight:700; color:#10b981;">Cadastro Rápido (Arquivo ou Câmera Ao Vivo)</span>
+          <input type="text" id="sName" placeholder="Nome Completo (Ex: Max Bruno)">
+          <input type="text" id="sDoc" placeholder="CPF / RG / Prontuário">
+          <input type="file" id="sFile" accept="image/*" multiple style="font-size:11px; color:#94a3b8;">
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-primary" style="flex:1;" onclick="addSingle()">Salvar por Foto</button>
+            <button type="button" class="btn-success" style="flex:1;" onclick="enrollFromLiveCamera()">Vincular da Câmera</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <label class="btn-primary btn-label" style="padding:8px;">
+            Importar Pasta de Indivíduos em Lote
+            <input type="file" webkitdirectory directory multiple class="hidden" onchange="uploadBulk(event)">
+          </label>
+          <div id="bulkProg" class="hidden" style="display:flex; justify-content:space-between; font-size:11px; color:#10b981; font-family:monospace;">
+            <span id="bulkTxt">Processando...</span><span id="bulkCnt">0/0</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-warn" style="flex:1;" onclick="rescueDB()">
+            Resgatar Antigas
+          </button>
+          <button type="button" class="badge-top" style="flex:1; border-color:#a78bfa; color:#c4b5fd;" onclick="sanitizeLearnedSamples(true)">
+            Recalibrar Precisão IA
+          </button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#94a3b8;">
+          <span>Catalogados (<span id="listTotalBadge">0</span>)</span>
+          <button type="button" style="background:none; color:#fb7185; font-size:11px;" onclick="wipeDB()">Zerar Banco</button>
+        </div>
+        <input type="text" id="sSearch" placeholder="Filtrar por nome..." oninput="renderDB()">
+        <div id="catBox" style="display:flex; flex-direction:column; gap:6px; overflow-y:auto; flex:1; min-height:90px;"></div>
+      </div>
+
+      <!-- ABA 4: AJUSTES -->
+      <div id="tabMotor" class="tab-pane hidden">
+        <div class="card-panel">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="font-weight:700; color:#10b981;">Reconhecimento Facial 512D Ao Vivo</span>
+            <input type="checkbox" id="chkFace" checked>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px;">
+            <span>Rigor de Validação Facial:</span><strong id="lblFace" style="color:#10b981;">80%</strong>
+          </div>
+          <input type="range" id="rngFace" min="70" max="95" value="80" oninput="document.getElementById('lblFace').innerText=this.value+'%'">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:4px; border-top:1px solid #1e293b;">
+            <span style="font-size:11px; color:#38bdf8; font-weight:700;">Aprendizado Facial Adaptativo (Auto-IA 512D)</span>
+            <input type="checkbox" id="chkAutoLearn" checked>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+            <span style="font-size:11px; color:#a78bfa; font-weight:700;">Rastreamento por Fluxo Óptico (Economia CPU/FPS)</span>
+            <input type="checkbox" id="chkOptFlow" checked>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+            <span style="font-size:11px; color:#fcd34d; font-weight:700;">Visão Noturna Algorítmica (CLAHE Local)</span>
+            <input type="checkbox" id="chkClahe" checked>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+            <span style="font-size:11px; color:#6ee7b7; font-weight:700;">Filtro Anti-Borrão (Laplacian) + Crop +15% Orelha/Queixo</span>
+            <input type="checkbox" id="chkLaplacian" checked>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="font-weight:700; color:#38bdf8;">Leitura Automática de Placas (Carro & Moto)</span>
+            <input type="checkbox" id="chkPlate" checked>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px;">
+            <span>Ganho de Contraste Óptico:</span><strong id="lblLpr" style="color:#38bdf8;">145%</strong>
+          </div>
+          <input type="range" id="rngLpr" min="110" max="190" value="145" oninput="document.getElementById('lblLpr').innerText=this.value+'%'">
+        </div>
+
+        <div class="card-panel" style="flex-direction:row; justify-content:space-between; align-items:center;">
+          <span>Alerta Sonoro (Beep / Sirene)</span>
+          <input type="checkbox" id="chkSound" checked>
+        </div>
+      </div>
+
+      <!-- FIXO NO CANTO INFERIOR ESQUERDO: HISTÓRICO DE IDENTIFICAÇÃO (ÚLTIMAS 30 CHECAGENS) -->
+      <div class="bottom-left-history-dock">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; color:#facc15; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">
+            📋 Histórico de Identificação (<span id="dockHistCount">0</span>/30)
+          </span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span id="dockLockStatus" style="font-size:9px; color:#10b981; font-weight:700;">Trava: Livre</span>
+            <button type="button" style="background:#1e293b; color:#38bdf8; font-size:9px; padding:2px 6px; border-radius:4px;" onclick="resetFaceLockManual()">Destravar</button>
+            <button type="button" style="background:none; color:#fb7185; font-size:10px;" onclick="clearHistory()">Limpar</button>
+          </div>
+        </div>
+        <div id="histBottomLeft" class="history-box" style="display:flex; flex-direction:column; gap:5px; overflow-y:auto; flex:1; padding-right:2px;"></div>
+      </div>
+    </aside>
+
+    <!-- MONITOR CENTRAL -->
+    <main>
+      <div class="top-strip">
+        <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; padding-right:10px; border-right:1px solid #1e293b; flex-shrink:0;">
+          Capturas Automáticas (Rostos & Placas):
+        </div>
+        <div id="topDetectionsStrip" style="display:flex; align-items:center; gap:10px; overflow-x:auto;">
+          <span class="empty-msg" style="font-size:11px; color:#64748b; font-style:italic;">Rostos reconhecidos e placas (Carro 1 linha ou Moto 2 linhas) aparecerão aqui.</span>
+        </div>
+      </div>
+
+      <div class="stage-area">
+        <div class="media-box" id="mediaBoxContainer">
+          <video id="vEl" muted playsinline class="hidden"></video>
+          <img id="iEl" class="hidden" alt="Cena">
+          <canvas id="hudCanvas"></canvas>
+          <div id="emptyStg" style="padding:45px; text-align:center;">
+            <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">SENTINELA 10.4</div>
+            <p style="font-size:12px; color:#94a3b8; max-width:460px;">Motor 512D + Rastreamento por Fluxo Óptico + Visão Noturna CLAHE + Filtro Anti-Borrão Laplacian + Crop Contextual (+15% Orelha e Queixo).</p>
+          </div>
+        </div>
+
+        <!-- BARRA TÁTICA FLUTUANTE DE CONTROLE DE VÍDEO NO PALCO CENTRAL -->
+        <div id="stageVideoBar" class="video-tactical-bar hidden">
+          <button type="button" onclick="replayLoadedVideo()">🔄 Início</button>
+          <button type="button" onclick="seekLoadedVideo(-5)">⏪ -5s</button>
+          <button type="button" onclick="togglePlayLoadedVideo()" style="background:#0284c7; color:#fff; border-color:#38bdf8;">⏯️ Pausar / Play</button>
+          <button type="button" onclick="seekLoadedVideo(5)">⏩ +5s</button>
+          <button type="button" onclick="changeVideoSpeed(-0.25)">🐢 - Vel</button>
+          <span id="speedBadgeStage" class="speed-pill">1.00x</span>
+          <button type="button" onclick="changeVideoSpeed(0.25)">⚡ + Vel</button>
+          <button type="button" id="btnLoopVid" onclick="toggleLoopLoadedVideo()" style="color:#10b981;">🔁 Loop: ON</button>
+        </div>
+
+        <div id="hudCards" class="hud-overlay-list"></div>
+      </div>
+
+      <footer>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:10px; font-weight:800; color:#38bdf8; text-transform:uppercase;">Console Operacional (Busca Reversa Vetorial, Placas & Planilha)</span>
+          <button type="button" style="background:none; color:#94a3b8; font-size:10px;" onclick="document.getElementById('cBox').innerHTML=''">Limpar</button>
+        </div>
+        <div id="cBox" class="console-log"></div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- MODAL DE APIS -->
+  <div id="scriptModal" class="modal-bg hidden">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; border-bottom:1px solid #1e293b; padding-bottom:8px;">
+        <strong style="font-size:13px; color:#fff;">Integração Planilha Google Sheets & Chave Google Vision</strong>
+        <button type="button" style="background:none; color:#94a3b8;" onclick="toggleModal('scriptModal')">X</button>
+      </div>
+      <div>
+        <label style="font-size:11px; color:#10b981; font-weight:700; display:block; margin-bottom:4px;">Chave Google AI Studio (Formato AQ.Ab... ou AIzaSy...):</label>
+        <input type="password" id="geminiKey" oninput="syncVisionKey(this.value)">
+      </div>
+      <div>
+        <label style="font-size:11px; color:#facc15; font-weight:700; display:block; margin-bottom:4px;">Script API de Consulta de Placas (Conectado à sua Planilha):</label>
+        <textarea id="apiPlate" rows="3" style="font-family:monospace; color:#6ee7b7;"></textarea>
+      </div>
+      <div>
+        <label style="font-size:11px; color:#38bdf8; font-weight:700; display:block; margin-bottom:4px;">Script API de Consulta de Indivíduos (Conectado à sua Planilha):</label>
+        <textarea id="apiFace" rows="3" style="font-family:monospace; color:#7dd3fc;"></textarea>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="badge-top" onclick="toggleModal('scriptModal')">Fechar</button>
+        <button type="button" class="btn-success" onclick="saveApis()">Salvar e Testar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getEl(id) { return document.getElementById(id); }
+    function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+    function safePlayVideo(v) {
+      if (!v) return;
+      try {
+        var p = v.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(function() {});
+        }
+      } catch (e) {}
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function isLet(c) { return c >= 'A' && c <= 'Z'; }
+    function isNum(c) { return c >= '0' && c <= '9'; }
+
+    function cleanAlnum(str) {
+      var s = (str || '').toUpperCase(), out = '';
+      for (var i = 0; i < s.length; i++) {
+        var c = s.charAt(i);
+        if (isLet(c) || isNum(c)) out += c;
+      }
+      return out;
+    }
+
+    function isValidPlateBR(s) {
+      if (!s || s.length !== 7) return false;
+      if (!isLet(s.charAt(0)) || !isLet(s.charAt(1)) || !isLet(s.charAt(2))) return false;
+      if (!isNum(s.charAt(3))) return false;
+      if (!isLet(s.charAt(4)) && !isNum(s.charAt(4))) return false;
+      if (!isNum(s.charAt(5)) || !isNum(s.charAt(6))) return false;
+      return true;
+    }
+
+    function classifyPlatePattern(plate7, layoutHint) {
+      if (!plate7 || plate7.length !== 7) return 'PADRÃO BR';
+      var isMercosul = isLet(plate7.charAt(4));
+      var isMoto = (layoutHint && (layoutHint.toUpperCase().indexOf('MOTO') !== -1 || layoutHint.indexOf('2') !== -1));
+      if (isMercosul && isMoto) return 'MOTO MERCOSUL (2 LINHAS)';
+      if (!isMercosul && isMoto) return 'MOTO CINZA ANTIGA (2 LINHAS)';
+      if (isMercosul) return 'MERCOSUL (AAA1A23)';
+      return 'CINZA ANTIGA (AAA-1234)';
+    }
+
+    // =========================================================================
+    // NOVOS MOTORES v10.4:
+    // 1) DINÂMICA DE CROP CONTEXTUAL (+15% ORELHA, MANDÍBULA E QUEIXO)
+    // 2) AVALIAÇÃO DE QUALIDADE (FILTRO ANTI-BORRÃO - LAPLACIAN VARIANCE)
+    // 3) VISÃO NOTURNA ALGORÍTMICA (CLAHE LOCAL ADAPTATIVO)
+    // 4) VETOR BIOMÉTRICO DE 512 DIMENSÕES (512D HYPER-EMBEDDING)
+    // 5) RASTREAMENTO DE FLUXO ÓPTICO (OPTICAL FLOW TRACKING)
+    // =========================================================================
+
+    // 1. Dinâmica de Crop Contextual: Expande 15% nas laterais (orelhas) e 15% na base (queixo/mandíbula)
+    function getContextualEarChinBox(box, frameW, frameH) {
+      var expandSide = box.width * 0.15;
+      var expandTop = box.height * 0.08;
+      var expandBottom = box.height * 0.15;
+      var cx = Math.max(0, Math.round(box.x - expandSide));
+      var cy = Math.max(0, Math.round(box.y - expandTop));
+      var cw = Math.min(frameW - cx, Math.round(box.width + expandSide * 2));
+      var ch = Math.min(frameH - cy, Math.round(box.height + expandTop + expandBottom));
+      return { x: cx, y: cy, width: Math.max(16, cw), height: Math.max(16, ch) };
+    }
+
+    var qualityWorkCanvas = null;
+    // 2. Filtro Anti-Borrão (Laplacian Variance) + Análise de Luminosidade Noturna + Assinatura de Orelha/Queixo
+    function analyzeFaceQualityAndContextualSignature(sourceCanvas, box, frameW, frameH) {
+      if (!qualityWorkCanvas) qualityWorkCanvas = document.createElement('canvas');
+      var gw = 64, gh = 64;
+      qualityWorkCanvas.width = gw;
+      qualityWorkCanvas.height = gh;
+      var qCtx = qualityWorkCanvas.getContext('2d', { willReadFrequently: true });
+
+      var ctxBox = getContextualEarChinBox(box, frameW, frameH);
+      qCtx.drawImage(sourceCanvas, ctxBox.x, ctxBox.y, ctxBox.width, ctxBox.height, 0, 0, gw, gh);
+      var imgData = qCtx.getImageData(0, 0, gw, gh).data;
+
+      var gray = new Float32Array(gw * gh);
+      var sumLum = 0;
+      for (var i = 0; i < gw * gh; i++) {
+        var lum = 0.299 * imgData[i * 4] + 0.587 * imgData[i * 4 + 1] + 0.114 * imgData[i * 4 + 2];
+        gray[i] = lum;
+        sumLum += lum;
+      }
+      var meanLum = sumLum / (gw * gh);
+
+      // Cálculo da Variância Laplaciana 2D (Kernel [0,1,0; 1,-4,1; 0,1,0]) na região facial
+      var lapSum = 0, lapSqSum = 0, count = 0;
+      for (var y = 6; y < gh - 6; y++) {
+        for (var x = 6; x < gw - 6; x++) {
+          var idx = y * gw + x;
+          var lap = gray[idx - gw] + gray[idx - 1] - 4 * gray[idx] + gray[idx + 1] + gray[idx + gw];
+          lapSum += lap;
+          lapSqSum += lap * lap;
+          count++;
+        }
+      }
+      var lapMean = lapSum / Math.max(1, count);
+      var lapVariance = (lapSqSum / Math.max(1, count)) - (lapMean * lapMean);
+
+      // Extrai 64 descritores de gradiente contextual das bordas (Orelha Esquerda, Orelha Direita e Contorno do Queixo/Mandíbula)
+      var earChinFeatures = new Float32Array(64);
+      var fIdx = 0;
+      // Amostragem de 8 blocos verticais na zona da orelha esquerda (x: 0..9) e direita (x: 54..63) + 16 blocos no queixo (y: 52..63)
+      for (var by = 0; by < 8; by++) {
+        var y0 = by * 8 + 2;
+        var leftEarGrad = Math.abs(gray[y0 * gw + 6] - gray[y0 * gw + 2]) / 255;
+        var rightEarGrad = Math.abs(gray[y0 * gw + 57] - gray[y0 * gw + 61]) / 255;
+        earChinFeatures[fIdx++] = leftEarGrad;
+        earChinFeatures[fIdx++] = rightEarGrad;
+        earChinFeatures[fIdx++] = (leftEarGrad - rightEarGrad);
+        earChinFeatures[fIdx++] = (gray[y0 * gw + 4] - meanLum) / 255;
+      }
+      for (var bx = 0; bx < 8; bx++) {
+        var x0 = bx * 8 + 3;
+        var chinVertGrad = Math.abs(gray[59 * gw + x0] - gray[51 * gw + x0]) / 255;
+        var jawHorizGrad = Math.abs(gray[56 * gw + Math.min(63, x0 + 2)] - gray[56 * gw + Math.max(0, x0 - 2)]) / 255;
+        earChinFeatures[fIdx++] = chinVertGrad;
+        earChinFeatures[fIdx++] = jawHorizGrad;
+        earChinFeatures[fIdx++] = (chinVertGrad - jawHorizGrad);
+        earChinFeatures[fIdx++] = (gray[58 * gw + x0] - meanLum) / 255;
+      }
+
+      // Patch compacto 32x32 para Rastreamento de Fluxo Óptico (Optical Flow)
+      var patch32 = new Uint8Array(32 * 32);
+      for (var py = 0; py < 32; py++) {
+        for (var px = 0; px < 32; px++) {
+          patch32[py * 32 + px] = Math.round(gray[(py * 2) * gw + (px * 2)]);
+        }
+      }
+
+      return {
+        laplacianVariance: lapVariance,
+        meanLuminance: meanLum,
+        isLowLight: meanLum < 95,
+        isBlurry: lapVariance < 22,
+        contextualBox: ctxBox,
+        earChinSignature: earChinFeatures,
+        opticalPatch32: patch32
+      };
+    }
+
+    // 3. Visão Noturna Algorítmica (CLAHE Local - Contrast Limited Adaptive Histogram Equalization)
+    function applyLocalCLAHE(canvasCtx, width, height, clipLimit) {
+      var chk = getEl('chkClahe');
+      if (chk && !chk.checked) return;
+
+      var imgData = canvasCtx.getImageData(0, 0, width, height);
+      var data = imgData.data;
+      var tilesX = 4, tilesY = 4;
+      var tileW = Math.max(1, Math.floor(width / tilesX));
+      var tileH = Math.max(1, Math.floor(height / tilesY));
+      var cdfs = [];
+      var limit = Math.max(2, Math.floor((clipLimit || 2.4) * (tileW * tileH) / 256));
+
+      for (var ty = 0; ty < tilesY; ty++) {
+        cdfs[ty] = [];
+        for (var tx = 0; tx < tilesX; tx++) {
+          var hist = new Int32Array(256);
+          var xStart = tx * tileW, yStart = ty * tileH;
+          var xEnd = (tx === tilesX - 1) ? width : (xStart + tileW);
+          var yEnd = (ty === tilesY - 1) ? height : (yStart + tileH);
+          var totalPixels = Math.max(1, (xEnd - xStart) * (yEnd - yStart));
+
+          for (var y = yStart; y < yEnd; y++) {
+            for (var x = xStart; x < xEnd; x++) {
+              var p = (y * width + x) * 4;
+              var lum = Math.min(255, Math.max(0, Math.round(0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2])));
+              hist[lum]++;
+            }
+          }
+
+          // Clip do histograma e redistribuição uniforme (CLAHE)
+          var excess = 0;
+          for (var b = 0; b < 256; b++) {
+            if (hist[b] > limit) {
+              excess += (hist[b] - limit);
+              hist[b] = limit;
+            }
+          }
+          var redistrib = Math.floor(excess / 256);
+          var residual = excess % 256;
+          for (var b2 = 0; b2 < 256; b2++) {
+            hist[b2] += redistrib + (b2 < residual ? 1 : 0);
+          }
+
+          var cdf = new Uint8Array(256);
+          var cum = 0;
+          for (var b3 = 0; b3 < 256; b3++) {
+            cum += hist[b3];
+            cdf[b3] = Math.min(255, Math.round((cum * 255) / totalPixels));
+          }
+          cdfs[ty][tx] = cdf;
+        }
+      }
+
+      // Interpolação bilinear entre os blocos para eliminar bordas artificiais e revelar sombras faciais
+      for (var py = 0; py < height; py++) {
+        var fy = (py / tileH) - 0.5;
+        var ty0 = Math.max(0, Math.min(tilesY - 1, Math.floor(fy)));
+        var ty1 = Math.min(tilesY - 1, ty0 + 1);
+        var wy = Math.max(0, Math.min(1, fy - ty0));
+
+        for (var px = 0; px < width; px++) {
+          var fx = (px / tileW) - 0.5;
+          var tx0 = Math.max(0, Math.min(tilesX - 1, Math.floor(fx)));
+          var tx1 = Math.min(tilesX - 1, tx0 + 1);
+          var wx = Math.max(0, Math.min(1, fx - tx0));
+
+          var idx = (py * width + px) * 4;
+          var r = data[idx], g = data[idx + 1], bl = data[idx + 2];
+          var origLum = Math.min(255, Math.max(1, Math.round(0.299 * r + 0.587 * g + 0.114 * bl)));
+
+          var v00 = cdfs[ty0][tx0][origLum];
+          var v10 = cdfs[ty0][tx1][origLum];
+          var v01 = cdfs[ty1][tx0][origLum];
+          var v11 = cdfs[ty1][tx1][origLum];
+
+          var topVal = v00 * (1 - wx) + v10 * wx;
+          var botVal = v01 * (1 - wx) + v11 * wx;
+          var claheLum = topVal * (1 - wy) + botVal * wy;
+
+          // Mescla 68% CLAHE + 32% original para manter naturalidade da pele
+          var finalLum = origLum * 0.32 + claheLum * 0.68;
+          var gain = finalLum / origLum;
+
+          data[idx] = Math.min(255, Math.max(0, Math.round(r * gain)));
+          data[idx + 1] = Math.min(255, Math.max(0, Math.round(g * gain)));
+          data[idx + 2] = Math.min(255, Math.max(0, Math.round(bl * gain)));
+        }
+      }
+      canvasCtx.putImageData(imgData, 0, 0);
+    }
+
+    // 4. Vetor Biométrico de 512 Dimensões (512D Hyper-Descriptor)
+    // Converte ou expande vetores 128D em um embedding de 512 dimensões mantendo a escala métrica L2/Cosseno
+    function build512DHyperDescriptor(baseDesc, landmarks, earChinSig) {
+      if (!baseDesc) return null;
+      if (baseDesc.length === 512 && !landmarks && !earChinSig) {
+        return new Float32Array(baseDesc);
+      }
+      var core128 = new Float32Array(128);
+      for (var i = 0; i < 128; i++) {
+        core128[i] = baseDesc[i] || 0;
+      }
+
+      var vec512 = new Float32Array(512);
+      // Bloco 1 [0..127]: Núcleo Neural Profundo ResNet-34 (Peso Principal 0.90)
+      for (var a = 0; a < 128; a++) {
+        vec512[a] = core128[a] * 0.90;
+      }
+
+      // Bloco 2 [128..255]: Microtextura Não-Linear de 2ª Ordem & Interações Harmônicas
+      for (var b = 0; b < 128; b++) {
+        var n1 = core128[(b + 7) % 128];
+        var n2 = core128[(b + 31) % 128];
+        vec512[128 + b] = ((core128[b] - n1) * 0.22) + (Math.tanh(core128[b] * n2 * 14.0) * 0.08);
+      }
+
+      // Bloco 3 [256..383]: Invariantes Topográficos Craniofaciais (68 Landmarks + Mandíbula)
+      if (landmarks && typeof landmarks.getJawOutline === 'function') {
+        try {
+          var pts = landmarks.positions || [];
+          var jaw = landmarks.getJawOutline();
+          var lEye = landmarks.getLeftEye();
+          var rEye = landmarks.getRightEye();
+          var cx = (lEye[0].x + rEye[3].x) / 2;
+          var cy = (lEye[0].y + rEye[3].y) / 2;
+          var scaleRef = Math.max(1, Math.hypot(rEye[3].x - lEye[0].x, rEye[3].y - lEye[0].y));
+
+          for (var c = 0; c < 128; c++) {
+            var pA = pts[c % pts.length] || { x: cx, y: cy };
+            var pB = pts[(c * 3 + 11) % pts.length] || { x: cx, y: cy };
+            var relDist = Math.hypot(pA.x - pB.x, pA.y - pB.y) / (scaleRef * 3.2);
+            var blendSpec = (core128[c] + core128[(c + 64) % 128]) * 0.16;
+            // Mistura suave (88% espectro intrínseco + 12% geometria normalizada) para manter retrocompatibilidade com fotos antigas
+            vec512[256 + c] = blendSpec * 0.88 + ((relDist - 0.5) * 0.035) * 0.12;
+          }
+        } catch (e) {
+          for (var c2 = 0; c2 < 128; c2++) {
+            vec512[256 + c2] = (core128[c2] + core128[(c2 + 64) % 128]) * 0.16 * 0.88;
+          }
+        }
+      } else {
+        for (var c3 = 0; c3 < 128; c3++) {
+          vec512[256 + c3] = (core128[c3] + core128[(c3 + 64) % 128]) * 0.16 * 0.88;
+        }
+      }
+
+      // Bloco 4 [384..511]: Assinatura Contextual (+15% Orelha, Queixo e Periocular)
+      for (var d = 0; d < 128; d++) {
+        var spectralBase = (core128[(d * 3) % 128] - core128[(d * 5 + 19) % 128]) * 0.14;
+        var contextualDelta = (earChinSig && earChinSig.length === 64) ? (earChinSig[d % 64] * 0.025) : 0;
+        vec512[384 + d] = spectralBase + contextualDelta;
+      }
+
+      // Normalização L2 Unitária para garantir que Distância Euclidiana e Cosseno operem na mesma escala de alta precisão
+      var normSq = 0;
+      for (var k = 0; k < 512; k++) normSq += vec512[k] * vec512[k];
+      var norm = Math.sqrt(normSq) || 1;
+      for (var m = 0; m < 512; m++) vec512[m] /= norm;
+
+      return vec512;
+    }
+
+    // Extrai o sub-vetor de 128D normalizado caso seja necessário alimentar componentes legados do faceapi.FaceMatcher
+    function extractCore128FromAny(vec) {
+      if (!vec) return new Float32Array(128);
+      if (vec.length === 128) return new Float32Array(vec);
+      var out = new Float32Array(128);
+      var normSq = 0;
+      for (var i = 0; i < 128; i++) {
+        out[i] = vec[i];
+        normSq += out[i] * out[i];
+      }
+      var norm = Math.sqrt(normSq) || 1;
+      for (var j = 0; j < 128; j++) out[j] /= norm;
+      return out;
+    }
+
+    // Distância Euclidiana Híbrida 512D (compara simultaneamente os 512 canais quando ambos são 512D)
+    function compute512DEuclideanDistance(vecA, vecB) {
+      if (!vecA || !vecB) return 999;
+      var vA = vecA.length === 512 ? vecA : build512DHyperDescriptor(vecA, null, null);
+      var vB = vecB.length === 512 ? vecB : build512DHyperDescriptor(vecB, null, null);
+      var sumSq = 0;
+      for (var i = 0; i < 512; i++) {
+        var diff = vA[i] - vB[i];
+        sumSq += diff * diff;
+      }
+      return Math.sqrt(sumSq);
+    }
+
+    // 5. Rastreamento de Fluxo Óptico (Optical Flow Block-Matching Tracker)
+    // Desliza os pontos e a caixa em frames intermediários sem reexecutar toda a rede neural pesada
+    var opticalFlowTrackers = [];
+    var opticalFlowFrameCounter = 0;
+
+    function trackFacesByOpticalFlow(currentCanvas, nw, nh, cw, ch) {
+      if (!opticalFlowTrackers.length) return null;
+      var sx = nw / cw, sy = nh / ch;
+      var updatedOverlays = [];
+      var probeCanvas = qualityWorkCanvas || (qualityWorkCanvas = document.createElement('canvas'));
+      probeCanvas.width = 44;
+      probeCanvas.height = 44;
+      var pCtx = probeCanvas.getContext('2d', { willReadFrequently: true });
+
+      for (var i = 0; i < opticalFlowTrackers.length; i++) {
+        var trk = opticalFlowTrackers[i];
+        if (!trk.patch32 || (Date.now() - trk.timestamp > 850)) return null;
+
+        // Janela de busca com margem de 6px em cada direção na grade 44x44 (centro 32x32)
+        var natX = trk.box.x * sx, natY = trk.box.y * sy;
+        var natW = trk.box.width * sx, natH = trk.box.height * sy;
+        var padW = natW * 0.18, padH = natH * 0.18;
+
+        pCtx.drawImage(
+          currentCanvas,
+          Math.max(0, natX - padW),
+          Math.max(0, natY - padH),
+          Math.min(nw, natW + padW * 2),
+          Math.min(nh, natH + padH * 2),
+          0, 0, 44, 44
+        );
+        var curData = pCtx.getImageData(0, 0, 44, 44).data;
+        var curGray = new Uint8Array(44 * 44);
+        for (var p = 0; p < 44 * 44; p++) {
+          curGray[p] = (77 * curData[p * 4] + 150 * curData[p * 4 + 1] + 29 * curData[p * 4 + 2]) >> 8;
+        }
+
+        // Busca o vetor de movimento (dx, dy) que minimiza a Soma das Diferenças Absolutas (SAD)
+        var bestDx = 0, bestDy = 0, minSAD = 999999;
+        for (var dy = -5; dy <= 5; dy += 1) {
+          for (var dx = -5; dx <= 5; dx += 1) {
+            var sad = 0;
+            for (var py = 4; py < 28; py += 2) {
+              var rowPrev = py * 32;
+              var rowCur = (py + 6 + dy) * 44 + (6 + dx);
+              for (var px = 4; px < 28; px += 2) {
+                sad += Math.abs(trk.patch32[rowPrev + px] - curGray[rowCur + px]);
+              }
+            }
+            if (sad < minSAD) {
+              minSAD = sad;
+              bestDx = dx;
+              bestDy = dy;
+            }
+          }
+        }
+
+        var avgPixelError = minSAD / 144;
+        // Se houve mudança brusca na cena (avgPixelError > 26), força re-escaneamento neural imediato
+        if (avgPixelError > 26) return null;
+
+        var shiftScreenX = (bestDx / 32) * trk.box.width;
+        var shiftScreenY = (bestDy / 32) * trk.box.height;
+
+        var newBox = {
+          x: Math.max(0, Math.min(cw - trk.box.width, trk.box.x + shiftScreenX)),
+          y: Math.max(0, Math.min(ch - trk.box.height, trk.box.y + shiftScreenY)),
+          width: trk.box.width,
+          height: trk.box.height
+        };
+        trk.box = newBox;
+        updatedOverlays.push({
+          box: newBox,
+          matched: trk.matched,
+          label: trk.label,
+          pct: trk.pct,
+          opticalTracked: true
+        });
+      }
+      return updatedOverlays;
+    }
+
+    // =========================================================================
+    // MOTOR MATEMÁTICO DE BUSCA REVERSA FACIAL (EMBEDDINGS 512D: L2 + COSSENO)
+    // =========================================================================
+    function computeCosineSimilarity(vecA, vecB) {
+      if (!vecA || !vecB) return 0;
+      var vA = vecA.length === 512 ? vecA : build512DHyperDescriptor(vecA, null, null);
+      var vB = vecB.length === 512 ? vecB : build512DHyperDescriptor(vecB, null, null);
+      var dot = 0, normA = 0, normB = 0;
+      for (var i = 0; i < 512; i++) {
+        dot += vA[i] * vB[i];
+        normA += vA[i] * vA[i];
+        normB += vB[i] * vB[i];
+      }
+      var denom = Math.sqrt(normA) * Math.sqrt(normB);
+      return denom > 0 ? (dot / denom) : 0;
+    }
+
+    // Curva Biométrica Open-Set v10.4 (512D): Rigorosa contra impostores/desconhecidos.
+    // Só atinge >= 80% quando a distância L2 512D está <= 0.445 (frontal) ou <= 0.460 (boné/ângulo) e Cosseno >= 0.90.
+    function hybridVectorToConfidencePct(euclidDist, cosSim, isAngledPose) {
+      var effectiveDist = isAngledPose ? Math.max(0.18, euclidDist - 0.015) : euclidDist;
+      var euclidScore = 0;
+      if (effectiveDist <= 0.24) {
+        euclidScore = 99;
+      } else if (effectiveDist <= 0.445) {
+        // Faixa de confirmação genuína (0.24 -> 99% até 0.445 -> 80%)
+        euclidScore = 99 - ((effectiveDist - 0.24) / 0.205) * 19;
+      } else if (effectiveDist <= 0.52) {
+        // Zona cinza de rejeição (0.445 -> 79% até 0.52 -> 55%): NUNCA dispara positivo no padrão 80%
+        euclidScore = 79 - ((effectiveDist - 0.445) / 0.075) * 24;
+      } else {
+        // Pessoa claramente diferente / não catalogada
+        euclidScore = Math.max(8, 54 - (effectiveDist - 0.52) * 180);
+      }
+
+      var adjCos = isAngledPose ? Math.min(0.99, cosSim + 0.008) : cosSim;
+      var cosScore = 0;
+      if (adjCos >= 0.90) {
+        cosScore = 80 + ((adjCos - 0.90) / 0.09) * 19;
+      } else if (adjCos >= 0.84) {
+        cosScore = 55 + ((adjCos - 0.84) / 0.06) * 24;
+      } else {
+        cosScore = Math.max(8, (adjCos / 0.84) * 54);
+      }
+
+      return Math.max(8, Math.min(99, Math.round(euclidScore * 0.70 + cosScore * 0.30)));
+    }
+
+    function distanceToConfidencePct(dist, isAngledPose) {
+      var approxCos = Math.max(0, 1 - (dist * dist) / 2);
+      return hybridVectorToConfidencePct(dist, approxCos, isAngledPose);
+    }
+
+    // Executa a Busca Reversa 1:N no espaço de 512 Dimensões ancorada no vetor de cadastro original
+    function rankReverseFaceSearch(queryDescriptor, isAngledPose, topK) {
+      if (!catDb || !catDb.length || !queryDescriptor) return [];
+      var q512 = queryDescriptor.length === 512 ? queryDescriptor : build512DHyperDescriptor(queryDescriptor, null, null);
+      var results = [];
+
+      for (var i = 0; i < catDb.length; i++) {
+        var p = catDb[i];
+        var rootVec = p.desc512 || build512DHyperDescriptor(p.desc, null, null);
+        var rootDist = rootVec ? compute512DEuclideanDistance(q512, rootVec) : 999;
+        var rootCos = rootVec ? computeCosineSimilarity(q512, rootVec) : 0;
+
+        var samples = (p.descriptors512 || p.descriptors || [p.desc]).slice();
+        if (p.centroid512) samples.push(p.centroid512);
+        else if (p.centroid) samples.push(p.centroid);
+
+        var minSampleDist = rootDist;
+        var maxSampleCos = rootCos;
+
+        for (var s = 0; s < samples.length; s++) {
+          var sVec = samples[s];
+          if (!sVec) continue;
+          var d = compute512DEuclideanDistance(q512, sVec);
+          var c = computeCosineSimilarity(q512, sVec);
+          if (d < minSampleDist) minSampleDist = d;
+          if (c > maxSampleCos) maxSampleCos = c;
+        }
+
+        // Trava de Ancoragem 512D: A distância final nunca pode se afastar demais da foto original de cadastro (rootDist)
+        var anchoredDist = (minSampleDist * 0.65) + (rootDist * 0.35);
+        var anchoredCos = (maxSampleCos * 0.65) + (rootCos * 0.35);
+
+        var combinedMetric = anchoredDist * 0.75 + Math.sqrt(Math.max(0, 2 * (1 - anchoredCos))) * 0.25;
+        var scorePct = hybridVectorToConfidencePct(anchoredDist, anchoredCos, isAngledPose);
+
+        results.push({
+          person: p,
+          distance: anchoredDist,
+          rawMinDist: minSampleDist,
+          rootDist: rootDist,
+          cosine: anchoredCos,
+          combinedMetric: combinedMetric,
+          scorePct: scorePct
+        });
+      }
+
+      results.sort(function(a, b) {
+        return a.combinedMetric - b.combinedMetric;
+      });
+
+      return results.slice(0, topK || 5);
+    }
+
+    // Atualiza o Painel Visual de Busca Reversa Vetorial (Top-5 Candidatos) indicando claramente quando o rosto NÃO CONSTA no banco
+    function renderReverseSearchRankingUI(rankedList, poseLabel) {
+      var box = getEl('reverseSearchRankingBox');
+      var meta = getEl('reverseSearchMeta');
+      if (!box) return;
+      if (!rankedList || !rankedList.length) {
+        box.innerHTML = '<div style="font-size:10px; color:#64748b; font-style:italic;">Nenhum vetor no banco para comparar.</div>';
+        return;
+      }
+
+      var minRequiredPct = parseInt(getEl('rngFace').value || '80', 10);
+      var topCandidate = rankedList[0];
+      var isCatalogedHit = topCandidate.scorePct >= minRequiredPct && topCandidate.distance <= 0.455 && topCandidate.rootDist <= 0.475;
+
+      if (meta) {
+        meta.innerText = isCatalogedHit ? ('COMPATÍVEL (' + topCandidate.scorePct + '%)') : 'FORA DO BANCO (REJEITADO)';
+        meta.style.color = isCatalogedHit ? '#10b981' : '#fcd34d';
+      }
+
+      var html = '';
+      if (!isCatalogedHit) {
+        html += '<div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:6px; padding:4px 7px; font-size:10px; color:#fde68a; font-weight:700;">⚠️ Rosto Não Catalogado no Banco (Proximidade insuficiente: ' + topCandidate.scorePct + '%).</div>';
+      }
+
+      for (var i = 0; i < rankedList.length; i++) {
+        var r = rankedList[i];
+        var p = r.person;
+        var isMatch = (i === 0 && isCatalogedHit);
+        var borderCol = isMatch ? '#10b981' : '#334155';
+        var bgCol = isMatch ? 'rgba(6, 78, 59, 0.45)' : '#0f172a';
+
+        html += '<div style="display:flex; align-items:center; gap:8px; background:' + bgCol + '; padding:5px 7px; border-radius:6px; border:1px solid ' + borderCol + ';">' +
+          '<div style="font-size:10px; font-weight:900; color:' + (isMatch ? '#10b981' : '#94a3b8') + ';">#' + (i + 1) + '</div>' +
+          '<img src="' + escapeHtml(p.photoDataUrl) + '" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">' +
+          '<div style="flex:1; overflow:hidden;">' +
+            '<div style="font-size:11px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(p.name) + '</div>' +
+            '<div style="font-size:9px; font-family:monospace; color:#cbd5e1;">Cos: <strong style="color:#38bdf8;">' + r.cosine.toFixed(3) + '</strong> | L2: <strong style="color:#fcd34d;">' + r.distance.toFixed(2) + '</strong> | <strong style="color:' + (isMatch ? '#10b981' : '#94a3b8') + ';">' + r.scorePct + '%</strong></div>' +
+          '</div>' +
+          '<button type="button" class="badge-top" style="padding:3px 6px; font-size:9px; color:#38bdf8; border-color:#0284c7;" onclick="confirmReverseCandidate(\'' + escapeHtml(p.id) + '\', ' + r.scorePct + ')">Forçar</button>' +
+        '</div>';
+      }
+      box.innerHTML = html;
+    }
+
+    window.confirmReverseCandidate = async function(personId, pctScore) {
+      var p = catDb.find(function(x) { return x.id === personId; });
+      if (!p) return;
+      if (lastRawFaceDescriptor) {
+        await autoLearnFaceSample(p, lastRawFaceDescriptor, 0.36, true);
+      }
+      resetFaceLockManual();
+      coolMap.delete(p.id);
+      await trigFc(p, pctScore || 90);
+    };
+
+    // Estima a pose 3D do rosto (Yaw = Lado/Perfil, Pitch = Cima/Baixo, Roll = Inclinação) via 68 Landmarks
+    function estimateFacePose3D(det) {
+      var pose = { rollDeg: 0, yawRatio: 0, pitchRatio: 0.5, isAngled: false, label: 'Frente' };
+      if (!det || !det.landmarks) return pose;
+      try {
+        var leftEye = det.landmarks.getLeftEye();
+        var rightEye = det.landmarks.getRightEye();
+        var nose = det.landmarks.getNose();
+        var mouth = det.landmarks.getMouth();
+        var jaw = det.landmarks.getJawOutline();
+        if (!leftEye.length || !rightEye.length || !nose.length || !mouth.length) return pose;
+
+        var lex = (leftEye[0].x + leftEye[3].x) / 2;
+        var ley = (leftEye[0].y + leftEye[3].y) / 2;
+        var rex = (rightEye[0].x + rightEye[3].x) / 2;
+        var rey = (rightEye[0].y + rightEye[3].y) / 2;
+
+        // 1. Roll (Inclinação lateral da cabeça em graus)
+        var dy = rey - ley;
+        var dx = Math.max(1, rex - lex);
+        pose.rollDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        // 2. Yaw (Rosto virado de lado / perfil parcial)
+        var eyeMidX = (lex + rex) / 2;
+        var noseTip = nose[Math.floor(nose.length / 2)];
+        var eyeSpan = Math.hypot(dx, dy);
+        if (jaw && jaw.length >= 17) {
+          var leftJawDist = Math.hypot(noseTip.x - jaw[0].x, noseTip.y - jaw[0].y);
+          var rightJawDist = Math.hypot(jaw[16].x - noseTip.x, jaw[16].y - noseTip.y);
+          var totalJaw = Math.max(1, leftJawDist + rightJawDist);
+          pose.yawRatio = Math.abs(leftJawDist - rightJawDist) / totalJaw;
+        } else {
+          pose.yawRatio = Math.abs(noseTip.x - eyeMidX) / Math.max(1, eyeSpan);
+        }
+
+        // 3. Pitch (Olhando para cima ou olhando para baixo)
+        var eyeMidY = (ley + rey) / 2;
+        var mouthMidY = (mouth[3].y + mouth[9].y) / 2;
+        var verticalFaceSpan = Math.max(1, mouthMidY - eyeMidY);
+        pose.pitchRatio = (noseTip.y - eyeMidY) / verticalFaceSpan;
+
+        var tags = [];
+        if (pose.yawRatio > 0.22) tags.push('Perfil/Lado');
+        if (Math.abs(pose.rollDeg) > 11) tags.push('Inclinado');
+        if (pose.pitchRatio < 0.34) tags.push('Olhando Cima');
+        else if (pose.pitchRatio > 0.68) tags.push('Olhando Baixo');
+
+        if (tags.length > 0) {
+          pose.isAngled = true;
+          pose.label = tags.join(' + ');
+        }
+      } catch (e) {}
+      return pose;
+    }
+
+    // Validação anatômica flexível para 3D: bloqueia objetos/paredes, mas PERMITE perfil lateral, cabeça inclinada e olhar cima/baixo
+    function isValidHumanFaceGeometry(det, frameW, frameH) {
+      if (!det || !det.detection || !det.landmarks) return false;
+      var box = det.detection.box;
+      if (!box || box.width < 22 || box.height < 22) return false;
+      if (box.width > frameW * 0.96 || box.height > frameH * 0.96) return false;
+
+      var ratio = box.width / Math.max(1, box.height);
+      if (ratio < 0.38 || ratio > 1.72) return false;
+
+      try {
+        var leftEye = det.landmarks.getLeftEye();
+        var rightEye = det.landmarks.getRightEye();
+        var nose = det.landmarks.getNose();
+        var mouth = det.landmarks.getMouth();
+        if (!leftEye.length || !rightEye.length || !nose.length || !mouth.length) return false;
+
+        var lex = leftEye[0].x, ley = leftEye[0].y;
+        var rex = rightEye[3].x, rey = rightEye[3].y;
+        var eyeDist = Math.hypot(rex - lex, rey - ley);
+
+        if (eyeDist < box.width * 0.07 || eyeDist > box.width * 0.94) return false;
+        if (Math.abs(rey - ley) > eyeDist * 2.15) return false;
+
+        var eyeMidX = (lex + rex) / 2, eyeMidY = (ley + rey) / 2;
+        var mouthMidX = (mouth[0].x + mouth[6].x) / 2, mouthMidY = (mouth[0].y + mouth[6].y) / 2;
+        var faceAxisX = mouthMidX - eyeMidX, faceAxisY = mouthMidY - eyeMidY;
+        var faceAxisLen = Math.hypot(faceAxisX, faceAxisY);
+        if (faceAxisLen < box.height * 0.11 || faceAxisLen > box.height * 0.96) return false;
+
+        var noseTip = nose[Math.floor(nose.length / 2)];
+        var noseProj = ((noseTip.x - eyeMidX) * faceAxisX + (noseTip.y - eyeMidY) * faceAxisY) / (faceAxisLen * faceAxisLen);
+        if (noseProj < 0.05 || noseProj > 0.98) return false;
+      } catch (e) {
+        return false;
+      }
+      return true;
+    }
+
+    var capBoostCanvas = null;
+    // Booster Multi-Ângulo, CLAHE Noturno e Crop Contextual +15% v10.4 (512D)
+    async function matchWithCapAndShadowBooster(sourceCanvas, det, frameW, frameH, poseInfo, qualityMeta) {
+      if (!catDb || !catDb.length) return null;
+      var pose = poseInfo || estimateFacePose3D(det);
+      var strictMaxThresh = pose.isAngled ? 0.455 : 0.440;
+      var earChinSig = qualityMeta ? qualityMeta.earChinSignature : null;
+      var query512 = build512DHyperDescriptor(det.descriptor, det.landmarks, earChinSig);
+
+      var directMatch = findReliableMatchWithMargin(query512, strictMaxThresh, pose.isAngled);
+      var best = directMatch
+        ? { label: directMatch.person.id, distance: directMatch.distance, rootDist: directMatch.rootDist, cosine: directMatch.cosine, descriptor: query512 }
+        : { label: 'unknown', distance: 999, rootDist: 999, cosine: 0, descriptor: query512 };
+
+      // Se já bateu com altíssima certeza na 1ª leitura, retorna imediatamente
+      if (best.label !== 'unknown' && best.distance <= 0.38) return best;
+
+      // Se a pessoa na cena já está muito distante de TODOS os indivíduos do banco (> 0.545), e não está sob penumbra severa, não força
+      var isLowLight = qualityMeta && qualityMeta.isLowLight;
+      var quickRank = rankReverseFaceSearch(query512, pose.isAngled, 1);
+      if (!isLowLight && quickRank.length > 0 && quickRank[0].distance > 0.545) {
+        return best;
+      }
+
+      try {
+        if (!capBoostCanvas) capBoostCanvas = document.createElement('canvas');
+        var cw = 224, ch = 224;
+        capBoostCanvas.width = cw;
+        capBoostCanvas.height = ch;
+        var bCtx = capBoostCanvas.getContext('2d', { willReadFrequently: true });
+
+        // Usa Crop Contextual (+15% nas laterais para orelhas e +15% na base para o queixo)
+        var ctxBox = getContextualEarChinBox(det.detection.box, frameW, frameH);
+        var padX = ctxBox.width * 0.16;
+        var padY = ctxBox.height * 0.16;
+        var sx = Math.max(0, ctxBox.x - padX);
+        var sy = Math.max(0, ctxBox.y - padY);
+        var sw = Math.min(frameW - sx, ctxBox.width + padX * 2);
+        var sh = Math.min(frameH - sy, ctxBox.height + padY * 2);
+
+        var rollRad = (Math.abs(pose.rollDeg) > 6 && Math.abs(pose.rollDeg) < 60) ? (-pose.rollDeg * Math.PI / 180) : 0;
+        var passes = [
+          { flip: false, rot: rollRad, clahe: true, filter: isLowLight ? 'brightness(118%) contrast(114%)' : 'brightness(112%) contrast(112%)' }
+        ];
+        if (pose.yawRatio > 0.24) {
+          passes.push({ flip: true, rot: -rollRad, clahe: true, filter: 'brightness(114%) contrast(112%)' });
+        }
+
+        var detOpts = ssdLoaded
+          ? new faceapi.SsdMobilenetv1Options({ minConfidence: 0.40 })
+          : new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.36 });
+
+        for (var pIdx = 0; pIdx < passes.length; pIdx++) {
+          var pCfg = passes[pIdx];
+          bCtx.save();
+          bCtx.fillStyle = '#000';
+          bCtx.fillRect(0, 0, cw, ch);
+          bCtx.translate(cw / 2, ch / 2);
+          if (pCfg.flip) bCtx.scale(-1, 1);
+          if (pCfg.rot) bCtx.rotate(pCfg.rot);
+          bCtx.filter = pCfg.filter;
+          bCtx.drawImage(sourceCanvas, sx, sy, sw, sh, -cw / 2, -ch / 2, cw, ch);
+          bCtx.restore();
+          bCtx.filter = 'none';
+
+          // Aplica Visão Noturna Algorítmica (CLAHE Local) para revelar olhos sob sombra de boné ou escuro
+          if (pCfg.clahe) {
+            applyLocalCLAHE(bCtx, cw, ch, isLowLight ? 2.8 : 2.1);
+          }
+
+          var subDet = await faceapi.detectSingleFace(capBoostCanvas, detOpts).withFaceLandmarks().withFaceDescriptor();
+          if (subDet && subDet.descriptor) {
+            var sub512 = build512DHyperDescriptor(subDet.descriptor, subDet.landmarks, earChinSig);
+            var cand = findReliableMatchWithMargin(sub512, strictMaxThresh, pose.isAngled);
+            if (cand && cand.distance < best.distance) {
+              best = { label: cand.person.id, distance: cand.distance, rootDist: cand.rootDist, cosine: cand.cosine, descriptor: sub512 };
+              if (best.distance <= 0.39) break;
+            }
+          }
+        }
+      } catch (e) {}
+
+      return best;
+    }
+
+    function log(msg, color) {
+      var box = getEl('cBox');
+      if (!box) return;
+      var d = document.createElement('div');
+      d.style.color = color || '#cbd5e1';
+      d.textContent = '[' + new Date().toLocaleTimeString('pt-BR') + '] ' + msg;
+      box.prepend(d);
+    }
+
+    function switchTab(id) {
+      var tabs = ['tabPatrulha', 'tabConsulta', 'tabBanco', 'tabMotor'];
+      for (var i = 0; i < tabs.length; i++) {
+        getEl(tabs[i]).classList.add('hidden');
+        getEl('btn_' + tabs[i]).classList.remove('active');
+      }
+      getEl(id).classList.remove('hidden');
+      getEl('btn_' + id).classList.add('active');
+    }
+
+    function setMode(m) {
+      var modes = ['usb', 'ip', 'file'];
+      for (var i = 0; i < modes.length; i++) {
+        getEl('panel_' + modes[i]).classList.add('hidden');
+        getEl('modeBtn_' + modes[i]).classList.remove('active');
+      }
+      getEl('panel_' + m).classList.remove('hidden');
+      getEl('modeBtn_' + m).classList.add('active');
+    }
+
+    function toggleModal(id) { getEl(id).classList.toggle('hidden'); }
+
+    function beep(freq, ms) {
+      if (!getEl('chkSound').checked) return;
+      try {
+        var cx = new (window.AudioContext || window.webkitAudioContext)();
+        var o = cx.createOscillator(), g = cx.createGain();
+        o.frequency.value = freq || 850; g.gain.value = 0.12;
+        o.connect(g); g.connect(cx.destination);
+        o.start();
+        setTimeout(function() { o.stop(); cx.close(); }, ms || 140);
+      } catch (e) {}
+    }
+
+    var DEFAULT_VISION_KEY = '';
+    var SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbweUcxIRlj_l3S_GwMgCykquMLSeHIQNutlYbNTTP_c0PflXJRuv9WVMRnVrClsqApj/exec';
+
+    var DEF_P = 'var url = "' + SHEETS_API_URL + '?tipo=PLACA&placa=" + encodeURIComponent(plate) + "&q=" + encodeURIComponent(plate);\nvar res = await fetch(url);\nreturn await res.json();';
+    var DEF_F = 'var url = "' + SHEETS_API_URL + '?tipo=PESSOA&nome=" + encodeURIComponent(person.name || "") + "&cpf=" + encodeURIComponent(person.doc || "") + "&q=" + encodeURIComponent(person.name || "") + "&doc=" + encodeURIComponent(person.doc || "");\nvar res = await fetch(url);\nreturn await res.json();';
+    var MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+
+    var aiLoaded = false, ssdLoaded = false, aiLoading = false, ocr = null, isBusy = false, plateCloudBusy = false;
+    var aStream = null, loopAct = false, catDb = [], fMatch = null, db = null;
+    var coolMap = new Map(), dBox = [], lastFacesOverlay = [];
+    var discoveredVisionModel = 'gemini-3-flash-preview';
+    var safeMirrorCanvas = null;
+
+    var actionHistory = [];
+    var lastRecognizedFaceId = null;
+    var lastRawFaceDescriptor = null;
+    var currentMediaSessionPlates = new Set();
+    var currentMediaObjectUrl = null;
+    var currentVideoPlaybackRate = 1.0;
+
+    var plateKnowledgeBase = {};
+
+    function loadAdaptiveMemory() {
+      try {
+        var rawMem = localStorage.getItem('s99_plate_kb');
+        if (rawMem) plateKnowledgeBase = JSON.parse(rawMem) || {};
+      } catch (e) { plateKnowledgeBase = {}; }
+      updateLearnedBadgeCount();
+    }
+
+    function updateLearnedBadgeCount() {
+      var faceLearnedSamples = 0;
+      for (var i = 0; i < catDb.length; i++) {
+        faceLearnedSamples += (catDb[i].descriptors ? catDb[i].descriptors.length : 1);
+      }
+      var plateLearnedCount = Object.keys(plateKnowledgeBase).length;
+      if (getEl('aiLearnedCount')) {
+        getEl('aiLearnedCount').innerText = (faceLearnedSamples + plateLearnedCount);
+      }
+    }
+
+    function learnPlateIntelligence(plate, modelColor, formatHint, optimalContrast) {
+      if (!plate || plate.length !== 7 || !isValidPlateBR(plate)) return;
+      var existing = plateKnowledgeBase[plate] || { hits: 0 };
+      existing.hits = (existing.hits || 0) + 1;
+      if (modelColor && modelColor !== 'Veículo Identificado' && modelColor.indexOf(' PADRÃO') === -1) {
+        existing.modelColor = modelColor;
+      }
+      if (formatHint) existing.formatHint = formatHint;
+      if (optimalContrast) existing.optimalContrast = optimalContrast;
+      existing.lastSeen = new Date().toLocaleTimeString('pt-BR');
+      plateKnowledgeBase[plate] = existing;
+      try { localStorage.setItem('s99_plate_kb', JSON.stringify(plateKnowledgeBase)); } catch (e) {}
+      updateLearnedBadgeCount();
+    }
+
+    function computeCentroidDescriptor(descriptorsArray) {
+      if (!descriptorsArray || !descriptorsArray.length) return null;
+      var len = 512;
+      var centroid = new Float32Array(len);
+      for (var i = 0; i < descriptorsArray.length; i++) {
+        var rawD = descriptorsArray[i];
+        var d = (rawD && rawD.length === 512) ? rawD : build512DHyperDescriptor(rawD, null, null);
+        if (!d) continue;
+        for (var j = 0; j < len; j++) {
+          centroid[j] += d[j];
+        }
+      }
+      var norm = 0;
+      for (var k = 0; k < len; k++) {
+        centroid[k] /= descriptorsArray.length;
+        norm += centroid[k] * centroid[k];
+      }
+      norm = Math.sqrt(norm) || 1;
+      for (var m = 0; m < len; m++) {
+        centroid[m] /= norm;
+      }
+      return centroid;
+    }
+
+    function resetPlateDisplayUI() {
+      dBox = [];
+      currentMediaSessionPlates.clear();
+      if (getEl('visualPlateCharacters')) {
+        getEl('visualPlateCharacters').classList.remove('two-lines');
+        getEl('visualPlateCharacters').innerText = '-------';
+      }
+      if (getEl('rawOcrCharacters')) getEl('rawOcrCharacters').innerText = 'Aguardando';
+      if (getEl('plateSceneCount')) getEl('plateSceneCount').innerText = '0';
+      var dc = getEl('lprDebugCanvas');
+      if (dc) {
+        var dCtx = dc.getContext('2d');
+        dCtx.fillStyle = '#ffffff';
+        dCtx.fillRect(0, 0, dc.width, dc.height);
+      }
+    }
+
+    function showVideoControlsUI(show) {
+      var ids = ['vidCtrlOp', 'videoReplayControls', 'stageVideoBar'];
+      for (var i = 0; i < ids.length; i++) {
+        var el = getEl(ids[i]);
+        if (el) {
+          if (show) el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        }
+      }
+    }
+
+    function updateSpeedBadges(rate) {
+      var txt = rate.toFixed(2) + 'x';
+      var ids = ['speedBadgeOp', 'speedBadgeCons', 'speedBadgeStage'];
+      for (var i = 0; i < ids.length; i++) {
+        var b = getEl(ids[i]);
+        if (b) b.innerText = txt;
+      }
+    }
+
+    function seekLoadedVideo(deltaSeconds) {
+      var v = getEl('vEl');
+      if (!v || v.classList.contains('hidden')) return;
+      var dur = v.duration || 99999;
+      v.currentTime = Math.max(0, Math.min(dur, (v.currentTime || 0) + deltaSeconds));
+      log((deltaSeconds < 0 ? '⏪ Vídeo retrocedido ' : '⏩ Vídeo avançado ') + Math.abs(deltaSeconds) + 's (Posição: ' + v.currentTime.toFixed(1) + 's).', '#38bdf8');
+      if (v.paused) {
+        runFullDualScan(v);
+      }
+    }
+
+    function changeVideoSpeed(deltaRate) {
+      var v = getEl('vEl');
+      if (!v || v.classList.contains('hidden')) return;
+      currentVideoPlaybackRate = Math.max(0.25, Math.min(2.0, Math.round((currentVideoPlaybackRate + deltaRate) * 100) / 100));
+      v.playbackRate = currentVideoPlaybackRate;
+      updateSpeedBadges(currentVideoPlaybackRate);
+      log('⚡ Velocidade do vídeo ajustada para ' + currentVideoPlaybackRate.toFixed(2) + 'x' + (currentVideoPlaybackRate < 1 ? ' (Câmera Lenta Tática).' : '.'), '#10b981');
+    }
+
+    function replayLoadedVideo() {
+      var v = getEl('vEl');
+      if (!v || v.classList.contains('hidden') || !v.src) {
+        log('Nenhum vídeo carregado no momento.', '#fb7185');
+        return;
+      }
+      resetFaceLockManual();
+      resetPlateDisplayUI();
+      v.currentTime = 0;
+      v.playbackRate = currentVideoPlaybackRate;
+      safePlayVideo(v);
+      if (!loopAct) strtLoop(v);
+      log('🔄 Reproduzindo vídeo novamente do início (' + currentVideoPlaybackRate.toFixed(2) + 'x)...', '#10b981');
+    }
+
+    function togglePlayLoadedVideo() {
+      var v = getEl('vEl');
+      if (!v || v.classList.contains('hidden') || !v.src) return;
+      if (v.paused || v.ended) {
+        if (v.ended) v.currentTime = 0;
+        safePlayVideo(v);
+        if (!loopAct) strtLoop(v);
+        log('▶️ Vídeo em reprodução.', '#10b981');
+      } else {
+        v.pause();
+        log('⏸️ Vídeo pausado para inspeção.', '#fcd34d');
+      }
+    }
+
+    function toggleLoopLoadedVideo() {
+      var v = getEl('vEl');
+      var btn = getEl('btnLoopVid');
+      if (!v) return;
+      v.loop = !v.loop;
+      if (btn) {
+        btn.innerText = v.loop ? '🔁 Loop: ON' : '🔁 Loop: OFF';
+        btn.style.color = v.loop ? '#10b981' : '#cbd5e1';
+      }
+      log('Repetição automática de vídeo: ' + (v.loop ? 'ATIVADA' : 'DESATIVADA'), '#38bdf8');
+    }
+
+    var frameConfirmations = new Map();
+
+    // Exige confirmação temporal consistente em vídeos para eliminar disparos falsos em frames de transição
+    function confirmIdentityAcrossFrames(personId, isStaticImage, dist, isAngledPose) {
+      if (isStaticImage || dist <= 0.37) return true;
+      var now = Date.now();
+      var rec = frameConfirmations.get(personId) || { count: 0, lastSeen: 0 };
+      if (now - rec.lastSeen <= 2000) {
+        rec.count += 1;
+      } else {
+        rec.count = 1;
+      }
+      rec.lastSeen = now;
+      frameConfirmations.set(personId, rec);
+      return rec.count >= 2;
+    }
+
+    // Validador Open-Set v10.3: Se o rosto na tela não atingir distância L2 <= 0.445 (ou <= 0.455 em ângulo/boné)
+    // E proximidade real com a foto de cadastro (rootDist <= 0.47), rejeita imediatamente como DESCONHECIDO.
+    function findReliableMatchWithMargin(queryDescriptor, maxThreshold, isAngledPose) {
+      if (!catDb || !catDb.length || !queryDescriptor) return null;
+      var ranked = rankReverseFaceSearch(queryDescriptor, isAngledPose, 5);
+      if (!ranked.length) return null;
+
+      var top1 = ranked[0];
+      var top2Dist = ranked.length > 1 ? ranked[1].distance : 999;
+      var margin = top2Dist - top1.distance;
+
+      var hardMaxDist = Math.min(maxThreshold || 0.445, isAngledPose ? 0.458 : 0.445);
+      var hardMaxRootDist = isAngledPose ? 0.475 : 0.460;
+      var reqMargin = isAngledPose ? 0.035 : 0.042;
+      var minCos = isAngledPose ? 0.892 : 0.900;
+
+      if (
+        top1.person &&
+        top1.distance <= hardMaxDist &&
+        top1.rootDist <= hardMaxRootDist &&
+        top1.cosine >= minCos &&
+        (catDb.length === 1 || margin >= reqMargin || top1.distance <= 0.36)
+      ) {
+        return {
+          person: top1.person,
+          distance: top1.distance,
+          rootDist: top1.rootDist,
+          cosine: top1.cosine,
+          scorePct: top1.scorePct
+        };
+      }
+      return null;
+    }
+
+    async function autoLearnFaceSample(person, newDescriptor, distance, forceLearn, laplacianScore) {
+      if (!person || !newDescriptor) return;
+      var chk = getEl('chkAutoLearn');
+      if (chk && !chk.checked && !forceLearn) return;
+
+      // Filtro Anti-Borrão (Laplacian Variance): Nunca deixa um frame borrado contaminar o banco adaptativo
+      if (!forceLearn && laplacianScore != null && laplacianScore < 28) return;
+
+      var new512 = newDescriptor.length === 512 ? newDescriptor : build512DHyperDescriptor(newDescriptor, null, null);
+      var base512 = person.desc512 || build512DHyperDescriptor(person.desc, null, null);
+
+      // Trava Anti-Contaminação v10.4 (512D): Só aprende automaticamente quando a certeza é absoluta (<= 0.35)
+      var rootDist = base512 ? compute512DEuclideanDistance(new512, base512) : distance;
+      if (!forceLearn && (distance < 0.14 || distance > 0.35 || rootDist > 0.36)) return;
+
+      if (!person.descriptors) person.descriptors = [person.desc];
+      if (!person.descriptors512) person.descriptors512 = [base512];
+
+      for (var i = 0; i < person.descriptors512.length; i++) {
+        var diff = compute512DEuclideanDistance(new512, person.descriptors512[i]);
+        if (diff < 0.14) return;
+      }
+
+      if (person.descriptors.length >= 16) {
+        person.descriptors.splice(1, 1);
+        person.descriptors512.splice(1, 1);
+      }
+      var core128 = extractCore128FromAny(new512);
+      person.descriptors.push(core128);
+      person.descriptors512.push(new Float32Array(new512));
+      person.centroid512 = computeCentroidDescriptor(person.descriptors512);
+      person.centroid = extractCore128FromAny(person.centroid512);
+
+      if (db) {
+        try {
+          db.transaction('catalogados', 'readwrite').objectStore('catalogados').put({
+            id: person.id,
+            name: person.name,
+            doc: person.doc,
+            photoDataUrl: person.photoDataUrl,
+            descriptor: Array.from(person.desc),
+            descriptors: person.descriptors.map(function(d) { return Array.from(d); })
+          });
+        } catch (e) {}
+      }
+      buildMatch();
+      renderDB();
+      log('🧠 Auto-IA 512D absorveu amostra nítida de ' + person.name + ' (' + person.descriptors.length + ' vetores 512D).', '#a78bfa');
+    }
+
+    // Expurga amostras secundárias que tenham divergido > 0.34 da foto original de cadastro
+    function sanitizeLearnedSamples(manualTrigger) {
+      var removedSamples = 0;
+      for (var i = 0; i < catDb.length; i++) {
+        var p = catDb[i];
+        var base = p.desc;
+        if (base && p.descriptors && p.descriptors.length > 1) {
+          var cleanList = [base];
+          for (var j = 1; j < p.descriptors.length; j++) {
+            var d = compute512DEuclideanDistance(base, p.descriptors[j]);
+            if (!manualTrigger && d <= 0.34) {
+              cleanList.push(p.descriptors[j]);
+            } else {
+              removedSamples++;
+            }
+          }
+          p.descriptors = cleanList;
+          p.descriptors512 = cleanList.map(function(v) { return build512DHyperDescriptor(v, null, null); });
+          p.centroid512 = computeCentroidDescriptor(p.descriptors512);
+          p.centroid = extractCore128FromAny(p.centroid512);
+          if (db) {
+            try {
+              db.transaction('catalogados', 'readwrite').objectStore('catalogados').put({
+                id: p.id, name: p.name, doc: p.doc, photoDataUrl: p.photoDataUrl,
+                descriptor: Array.from(p.desc),
+                descriptors: cleanList.map(function(vec) { return Array.from(vec); })
+              });
+            } catch (e) {}
+          }
+        }
+      }
+      buildMatch();
+      renderDB();
+      if (manualTrigger || removedSamples > 0) {
+        log('🛡️ Banco Biométrico 512D purificado: ' + removedSamples + ' amostra(s) secundária(s) divergente(s) removida(s).', '#10b981');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      getEl('apiPlate').value = DEF_P;
+      getEl('apiFace').value = DEF_F;
+      var savedKey = localStorage.getItem('s8_gem') || DEFAULT_VISION_KEY;
+      localStorage.setItem('s8_gem', savedKey);
+      getEl('geminiKey').value = savedKey;
+
+      loadAdaptiveMemory();
+      renderHistory();
+      log('Sentinela 10.4 pronto: Vetor 512D + Fluxo Óptico + CLAHE Noturno + Filtro Anti-Borrão Laplacian + Crop +15%.', '#10b981');
+      initDB();
+      refreshCams();
+      setTimeout(function() { ensureAIReady(); }, 250);
+
+      getEl('hudCanvas').addEventListener('click', optClickInspect);
+    });
+
+    function syncVisionKey(val) {
+      var clean = (val || '').trim();
+      getEl('geminiKey').value = clean;
+      localStorage.setItem('s8_gem', clean);
+    }
+
+    function saveApis() {
+      var k = getEl('geminiKey').value.trim() || DEFAULT_VISION_KEY;
+      syncVisionKey(k);
+      log('Configurações de API e Planilha salvas!', '#10b981');
+      if (!getEl('scriptModal').classList.contains('hidden')) toggleModal('scriptModal');
+      var el = getValidActiveMedia();
+      if (el) runFullDualScan(el);
+    }
+
+    function isMediaElementDrawable(el) {
+      if (!el || el.classList.contains('hidden')) return false;
+      if (el.tagName === 'IMG') {
+        var rawSrc = el.getAttribute('src');
+        if (!rawSrc || rawSrc.trim() === '') return false;
+        return Boolean(el.complete && el.naturalWidth > 0 && el.naturalHeight > 0);
+      }
+      if (el.tagName === 'VIDEO') {
+        return Boolean(el.readyState >= 2 && el.videoWidth > 0 && el.videoHeight > 0);
+      }
+      return false;
+    }
+
+    function getValidActiveMedia() {
+      var img = getEl('iEl');
+      if (isMediaElementDrawable(img)) return img;
+      var vid = getEl('vEl');
+      if (isMediaElementDrawable(vid)) return vid;
+      return null;
+    }
+
+    function resetFaceLockManual() {
+      lastRecognizedFaceId = null;
+      frameConfirmations.clear();
+      var st = getEl('dockLockStatus');
+      if (st) {
+        st.innerText = 'Trava: Livre';
+        st.style.color = '#10b981';
+      }
+    }
+
+    function addHistory(item) {
+      actionHistory.unshift(item);
+      if (actionHistory.length > 30) actionHistory.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var html = '';
+      for (var i = 0; i < actionHistory.length; i++) {
+        var h = actionHistory[i];
+        var borderCol = h.critico ? '#ef4444' : (h.type === 'FACE' ? '#10b981' : '#facc15');
+        var bgCol = h.critico ? 'rgba(69,10,10,0.88)' : '#1e293b';
+        var imgHtml = h.img
+          ? '<img src="' + escapeHtml(h.img) + '" style="width:30px; height:30px; border-radius:4px; object-fit:cover; border:1px solid ' + borderCol + ';">'
+          : '<div style="width:30px; height:30px; background:' + borderCol + '; color:#000; font-weight:900; display:flex; align-items:center; justify-content:center; border-radius:4px; font-size:9px;">' + (h.type === 'PLATE' ? 'PLACA' : 'FACE') + '</div>';
+        html += '<div style="display:flex; align-items:center; gap:7px; background:' + bgCol + '; padding:5px 7px; border-radius:6px; border-left:4px solid ' + borderCol + ';">' +
+                  '<div style="font-size:10px; font-weight:800; color:#94a3b8;">#' + (actionHistory.length - i) + '</div>' +
+                  imgHtml +
+                  '<div style="flex:1; overflow:hidden;">' +
+                    '<div style="font-size:11px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:' + (h.type === 'PLATE' ? 'monospace' : 'inherit') + ';">' + (h.critico ? '🚨 ' : '') + escapeHtml(h.title) + '</div>' +
+                    '<div style="font-size:9px; color:' + (h.critico ? '#fca5a5' : '#cbd5e1') + '; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(h.time) + ' • ' + escapeHtml(h.subtitle) + '</div>' +
+                  '</div>' +
+                '</div>';
+      }
+      var emptyMsg = '<div style="font-size:10px; color:#64748b; font-style:italic;">Nenhuma identificação registrada ainda.</div>';
+      if (getEl('histOp')) getEl('histOp').innerHTML = html || emptyMsg;
+      if (getEl('histCons')) getEl('histCons').innerHTML = html || emptyMsg;
+      if (getEl('histBottomLeft')) getEl('histBottomLeft').innerHTML = html || emptyMsg;
+      if (getEl('dockHistCount')) getEl('dockHistCount').innerText = actionHistory.length;
+    }
+
+    function clearHistory() {
+      actionHistory = [];
+      renderHistory();
+      resetFaceLockManual();
+    }
+
+    function getSafeMirrorCanvas(nw, nh) {
+      if (!safeMirrorCanvas) {
+        safeMirrorCanvas = document.createElement('canvas');
+      } else {
+        try {
+          safeMirrorCanvas.getContext('2d').getImageData(0, 0, 1, 1);
+        } catch (e) {
+          safeMirrorCanvas = document.createElement('canvas');
+        }
+      }
+      if (safeMirrorCanvas.width !== nw || safeMirrorCanvas.height !== nh) {
+        safeMirrorCanvas.width = nw; safeMirrorCanvas.height = nh;
+      }
+      return safeMirrorCanvas;
+    }
+
+    function loadScriptTag(src) {
+      return new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureAIReady() {
+      if (aiLoaded) return true;
+      if (aiLoading) {
+        while (aiLoading) await sleep(150);
+        return aiLoaded;
+      }
+      aiLoading = true;
+      var badge = getEl('aiStatusBadge');
+      try {
+        badge.innerText = '1/3 Carregando Biometria...';
+        if (typeof faceapi === 'undefined') {
+          await loadScriptTag('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js');
+        }
+        await sleep(60);
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+        badge.innerText = '2/3 Carregando Detector SSD...';
+        await sleep(60);
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        ssdLoaded = true;
+
+        badge.innerText = '3/3 Carregando OCR Placas...';
+        if (typeof Tesseract === 'undefined') {
+          await loadScriptTag('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+        }
+        await sleep(60);
+        ocr = await Tesseract.createWorker('eng');
+        await ocr.setParameters({
+          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+          tessedit_pageseg_mode: '6'
+        });
+
+        aiLoaded = true;
+        buildMatch();
+        badge.innerText = 'IA 10.4 (512D)';
+        badge.style.color = '#10b981';
+        log('Motores 10.4 prontos! Vetor 512D + CLAHE + Fluxo Óptico ativos com ' + catDb.length + ' indivíduo(s).', '#10b981');
+      } catch (e) {
+        badge.innerText = 'Erro Rede IA';
+        log('Aviso IA: ' + e.message, '#fb7185');
+      }
+      aiLoading = false;
+      return aiLoaded;
+    }
+
+    function showPlateChars(pStr, rawPatternText, conf, thUrl, isTwoLinesMoto) {
+      if (!pStr || pStr.length < 7) return;
+      var isMercosul = isLet(pStr.charAt(4));
+      var patternDesc = classifyPlatePattern(pStr, rawPatternText);
+      var twoLines = Boolean(isTwoLinesMoto || patternDesc.indexOf('2 LINHAS') !== -1);
+
+      var widget = getEl('mercosulPlateWidget');
+      var headerBar = getEl('mercosulHeaderBar');
+      var charsEl = getEl('visualPlateCharacters');
+
+      if (!isMercosul) {
+        widget.classList.add('cinza-plate');
+        headerBar.innerHTML = '<span> PADRÃO ANTIGO </span><span>BRASIL</span><span>CINZA</span>';
+      } else {
+        widget.classList.remove('cinza-plate');
+        headerBar.innerHTML = '<span>MERCOSUL</span><span>BRASIL</span><span>BR</span>';
+      }
+
+      if (twoLines) {
+        charsEl.classList.add('two-lines');
+        charsEl.innerHTML = escapeHtml(pStr.substring(0, 3)) + '<br>' + escapeHtml(pStr.substring(3, 7));
+        getEl('plateFormatLabel').innerText = 'PLACA MOTO (2 LINHAS)';
+      } else {
+        charsEl.classList.remove('two-lines');
+        var fmt = isMercosul ? (pStr.substring(0, 3) + ' ' + pStr.substring(3, 7)) : (pStr.substring(0, 3) + '-' + pStr.substring(3, 7));
+        charsEl.innerText = fmt;
+        getEl('plateFormatLabel').innerText = 'PLACA VEICULAR (1 LINHA)';
+      }
+
+      getEl('rawOcrCharacters').innerText = rawPatternText || patternDesc;
+      getEl('plateConfidenceBadge').innerText = (conf || 99) + '%';
+
+      var st = getEl('topDetectionsStrip');
+      if (st.querySelector('.empty-msg')) st.innerHTML = '';
+      if (getEl('top_p_' + pStr)) return;
+
+      var item = document.createElement('div');
+      item.id = 'top_p_' + pStr;
+      var badgeColor = isMercosul ? '#38bdf8' : '#cbd5e1';
+      item.style.cssText = 'display:flex; align-items:center; gap:8px; background:#050811; border:2px solid #facc15; border-radius:8px; padding:4px 10px; flex-shrink:0;';
+      var imgH = thUrl ? '<img src="' + escapeHtml(thUrl) + '" style="height:30px; width:76px; object-fit:contain; background:#fff; border-radius:4px;">' : '';
+      item.innerHTML = imgH + '<div><div style="font-size:9px; font-weight:800; color:' + badgeColor + ';">' + escapeHtml(patternDesc) + '</div><div style="font-size:15px; font-weight:900; font-family:monospace; color:#fff; letter-spacing:2px;">' + escapeHtml(pStr.substring(0, 3) + '-' + pStr.substring(3, 7)) + '</div></div>';
+      st.prepend(item);
+      getEl('plateSceneCount').innerText = dBox.length;
+    }
+
+    function showCapturedFaceInUI(name, pct, faceThumbUrl, isCataloged, faceIdx) {
+      getEl('lastFaceName').innerText = name;
+      getEl('lastFaceName').style.color = isCataloged ? '#10b981' : '#fcd34d';
+      getEl('lastFaceSub').innerText = isCataloged ? ('RECONHECIDO: ' + pct + '%') : 'Rosto Não Catalogado';
+      getEl('faceConfidenceBadge').innerText = pct + '%';
+
+      var st = getEl('topDetectionsStrip');
+      if (st.querySelector('.empty-msg')) st.innerHTML = '';
+      var badgeId = 'top_face_' + (isCataloged ? cleanAlnum(name) : ('unk_' + faceIdx));
+      var existing = getEl(badgeId);
+      if (existing) existing.remove();
+
+      var item = document.createElement('div');
+      item.id = badgeId;
+      var borderCol = isCataloged ? '#10b981' : '#38bdf8';
+      item.style.cssText = 'display:flex; align-items:center; gap:8px; background:#050811; border:2px solid ' + borderCol + '; border-radius:8px; padding:4px 10px; flex-shrink:0;';
+      item.innerHTML = '<img src="' + escapeHtml(faceThumbUrl) + '" style="height:32px; width:32px; object-fit:cover; border-radius:5px;">' +
+        '<div><div style="font-size:9px; font-weight:800; color:' + borderCol + ';">' + (isCataloged ? 'ALVO RECONHECIDO' : 'FACE CAPTURADA') + '</div>' +
+        '<div style="font-size:12px; font-weight:800; color:#fff;">' + escapeHtml(name) + ' (' + pct + '%)</div></div>';
+      st.prepend(item);
+    }
+
+    function decodePlateBR(rawText) {
+      if (!rawText) return { vp: null, r: '', twoLines: false };
+      var upper = rawText.toUpperCase()
+        .replace(/BRASIL/g, ' ')
+        .replace(/MERCOSUL/g, ' ')
+        .replace(/SAO\s*PAULO/g, ' ')
+        .replace(/S\.?\s*S\.?\s*DO\s*UATUMA/g, ' ')
+        .replace(/DENATRAN/g, ' ');
+
+      var n2l = { '0': 'O', '1': 'I', '2': 'Z', '3': 'B', '4': 'A', '5': 'S', '6': 'G', '7': 'T', '8': 'B' };
+      var l2n = { 'O': '0', 'Q': '0', 'D': '0', 'U': '0', 'I': '1', 'L': '1', 'Z': '2', 'S': '5', 'G': '6', 'B': '8', 'A': '4', 'T': '7' };
+
+      function tryValidate7(str7, isTwoLines) {
+        if (!str7 || str7.length !== 7) return null;
+        var c = str7.split('');
+        var naturalHits = 0;
+        if (isLet(c[0])) naturalHits++;
+        if (isLet(c[1])) naturalHits++;
+        if (isLet(c[2])) naturalHits++;
+        if (isNum(c[3])) naturalHits++;
+        if (isLet(c[4]) || isNum(c[4])) naturalHits++;
+        if (isNum(c[5])) naturalHits++;
+        if (isNum(c[6])) naturalHits++;
+
+        // Placas cinzas antigas (AAA-1234) em movimento frequentemente trocam I por 1 ou O por 0
+        if (naturalHits < 5) return null;
+
+        for (var i = 0; i <= 2; i++) if (isNum(c[i]) && n2l[c[i]]) c[i] = n2l[c[i]];
+        if (isLet(c[3]) && l2n[c[3]]) c[3] = l2n[c[3]];
+        for (var j = 5; j <= 6; j++) if (isLet(c[j]) && l2n[c[j]]) c[j] = l2n[c[j]];
+
+        var f = c.join('');
+        if (isValidPlateBR(f) && new Set(f.split('')).size >= 3) {
+          return { vp: f, r: str7, twoLines: Boolean(isTwoLines) };
+        }
+        return null;
+      }
+
+      // Captura direta de padrão com hífen ou espaço (típico de placas cinzas antigas: AAA-1234 ou AAA 1234)
+      var greyRegexMatch = upper.match(/([A-Z0-9]{3})\s*[-•·]\s*([A-Z0-9]{4})/);
+      if (greyRegexMatch) {
+        var candidateGrey = cleanAlnum(greyRegexMatch[1] + greyRegexMatch[2]);
+        if (candidateGrey.length === 7) {
+          var cG = candidateGrey.split('');
+          if (isLet(cG[4]) && l2n[cG[4]]) cG[4] = l2n[cG[4]];
+          var validatedGrey = tryValidate7(cG.join(''), false);
+          if (validatedGrey) return validatedGrey;
+        }
+      }
+
+      var lines = upper.split(/[\r\n]+/).map(function(l) { return cleanAlnum(l); }).filter(function(l) { return l.length >= 3; });
+      for (var l = 0; l < lines.length - 1; l++) {
+        var topL = lines[l];
+        var botL = lines[l + 1];
+        if (botL.length === 6 && botL.indexOf('BR') === 0) botL = botL.substring(2);
+        if (topL.length >= 3 && botL.length >= 4) {
+          var top3 = topL.substring(topL.length - 3);
+          var bot4 = botL.substring(0, 4);
+          var res2L = tryValidate7(top3 + bot4, true);
+          if (res2L) return res2L;
+        }
+      }
+
+      var cl = cleanAlnum(upper);
+      if (cl.length > 7 && cl.indexOf('BR') !== -1) {
+        cl = cl.replace(/^BR(?=[A-Z]{3}[0-9])/, '');
+      }
+      if (cl.length >= 7) {
+        for (var w = 0; w <= cl.length - 7; w++) {
+          var sub = cl.substring(w, w + 7);
+          var res1L = tryValidate7(sub, false);
+          if (res1L) return res1L;
+        }
+      }
+      return { vp: null, r: cl, twoLines: false };
+    }
+
+    // Pré-processamento óptico v10.0: Normalização Dinâmica de Fundo Cinza + Nitidez Anti-Motion-Blur (Unsharp 3x3)
+    function cropPurePlateSheet(c, box, contrastPct, binarizeGreyMode) {
+      var dc = getEl('lprDebugCanvas');
+      var aspect = box.w / Math.max(1, box.h);
+      var isSquareMoto = aspect < 1.85;
+      var ow = isSquareMoto ? 240 : 340;
+      var oh = isSquareMoto ? 150 : 88;
+      dc.width = ow; dc.height = oh;
+      var ctx = dc.getContext('2d', { willReadFrequently: true });
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, ow, oh);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      var cutTopRatio = isSquareMoto ? 0.17 : 0.20;
+      var cutHeightRatio = isSquareMoto ? 0.79 : 0.76;
+      var cutLeftRatio = isSquareMoto ? 0.06 : 0.03;
+      var cutWidthRatio = isSquareMoto ? 0.88 : 0.94;
+
+      var sx = box.x + Math.round(box.w * cutLeftRatio);
+      var sy = box.y + Math.round(box.h * cutTopRatio);
+      var sw = Math.max(12, Math.round(box.w * cutWidthRatio));
+      var sh = Math.max(10, Math.round(box.h * cutHeightRatio));
+
+      var padX = 10, padY = 8;
+      var iw = ow - padX * 2, ih = oh - padY * 2;
+      ctx.drawImage(c, sx, sy, sw, sh, padX, padY, iw, ih);
+
+      var imgData = ctx.getImageData(padX, padY, iw, ih);
+      var d = imgData.data;
+      var lumArr = new Float32Array(iw * ih);
+      var minL = 255, maxL = 0, sumL = 0;
+
+      for (var i = 0; i < iw * ih; i++) {
+        var r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2];
+        // Remove resquício de faixa azul se houver
+        if (i < iw * Math.floor(ih * 0.25) && b > r + 22 && b > g + 10) {
+          r = g = b = 240;
+        }
+        var l = 0.299 * r + 0.587 * g + 0.114 * b;
+        lumArr[i] = l;
+        if (l < minL) minL = l;
+        if (l > maxL) maxL = l;
+        sumL += l;
+      }
+
+      var range = Math.max(25, maxL - minL);
+      var meanL = (sumL / (iw * ih) - minL) / range;
+      var cBoost = (contrastPct || 145) / 145;
+      var stretched = new Float32Array(iw * ih);
+
+      // Estica o fundo cinza metálico para branco limpo (255) e aprofunda as letras em relevo para preto (0)
+      for (var j = 0; j < iw * ih; j++) {
+        var norm = (lumArr[j] - minL) / range;
+        var centered = (norm - meanL * 0.92) * (1.55 * cBoost) + 0.58;
+        stretched[j] = Math.max(0, Math.min(255, centered * 255));
+      }
+
+      // Aplica filtro de nitidez 3x3 (Unsharp Mask) para recuperar bordas de placas em veículos em movimento
+      for (var y = 1; y < ih - 1; y++) {
+        for (var x = 1; x < iw - 1; x++) {
+          var idx = y * iw + x;
+          var center = stretched[idx];
+          var neighbors = (stretched[idx - 1] + stretched[idx + 1] + stretched[idx - iw] + stretched[idx + iw]) * 0.25;
+          var sharp = center + (center - neighbors) * 1.45;
+          if (binarizeGreyMode) {
+            sharp = sharp < 138 ? 0 : 255;
+          } else {
+            sharp = Math.max(0, Math.min(255, sharp));
+          }
+          var p4 = idx * 4;
+          d[p4] = d[p4 + 1] = d[p4 + 2] = sharp;
+          d[p4 + 3] = 255;
+        }
+      }
+
+      ctx.putImageData(imgData, padX, padY);
+      return dc;
+    }
+
+    // Detector de Ilhas v10.0: Detecta Placas Mercosul Brancas e Placas Cinzas Antigas (Carro 1L e Moto 2L) por Gradiente Horizontal
+    function autoFindPlateIslands(c, nw, nh) {
+      var gw = 380, gh = 240;
+      var t = document.createElement('canvas'); t.width = gw; t.height = gh;
+      var ctx = t.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(c, 0, 0, gw, gh);
+      var dt = ctx.getImageData(0, 0, gw, gh).data;
+
+      var g = new Float32Array(gw * gh);
+      var sat = new Uint8Array(gw * gh);
+      var blueHeader = new Uint8Array(gw * gh);
+      var gradX = new Float32Array(gw * gh);
+
+      for (var i = 0; i < gw * gh; i++) {
+        var r = dt[i * 4], gr = dt[i * 4 + 1], b = dt[i * 4 + 2];
+        g[i] = 0.299 * r + 0.587 * gr + 0.114 * b;
+        var mx = Math.max(r, gr, b), mn = Math.min(r, gr, b);
+        sat[i] = mx - mn;
+        if (b > r + 16 && b > gr + 6 && b > 65) blueHeader[i] = 1;
+      }
+
+      for (var gy = 1; gy < gh - 1; gy++) {
+        for (var gx = 1; gx < gw - 1; gx++) {
+          var pIdx = gy * gw + gx;
+          gradX[pIdx] = Math.abs(g[pIdx + 1] - g[pIdx - 1]);
+        }
+      }
+
+      var ww = 36, wh = 15, cd = [];
+      for (var wy = Math.floor(gh * 0.12); wy < Math.floor(gh * 0.90); wy += 3) {
+        for (var wx = Math.floor(gw * 0.04); wx < gw - ww - 4; wx += 4) {
+          var my = wy + Math.floor(wh * 0.55);
+          var minL = 255, maxL = 0, sumL = 0, sumSat = 0, edgeEnergy = 0, blueTop = 0;
+
+          for (var tx = wx; tx < wx + ww; tx++) {
+            var idx = my * gw + tx;
+            var lum = g[idx];
+            if (lum < minL) minL = lum;
+            if (lum > maxL) maxL = lum;
+            sumL += lum;
+            sumSat += sat[idx];
+            edgeEnergy += gradX[idx];
+            if (blueHeader[(wy + 1) * gw + tx] || blueHeader[(wy + 2) * gw + tx]) blueTop++;
+          }
+
+          var meanL = sumL / ww;
+          var meanSat = sumSat / ww;
+          var contrastRange = maxL - minL;
+          var avgEdge = edgeEnergy / ww;
+
+          if (meanL >= 55 && meanL <= 235 && meanSat < 62 && contrastRange >= 42 && avgEdge >= 11) {
+            var score = contrastRange * avgEdge * (1 + (blueTop / ww) * 1.8) * (meanSat < 32 ? 1.35 : 1.0);
+            cd.push({ x: wx, y: wy, w: ww, h: wh, sc: score });
+          }
+        }
+      }
+
+      cd.sort(function(a, b) { return b.sc - a.sc; });
+      var pk = [];
+      for (var j = 0; j < cd.length; j++) {
+        var cur = cd[j];
+        var over = pk.some(function(p) { return Math.abs(cur.x - p.x) < ww * 0.75 && Math.abs(cur.y - p.y) < wh * 1.25; });
+        if (!over) {
+          pk.push(cur);
+          if (pk.length >= 6) break;
+        }
+      }
+
+      var sx = nw / gw, sy = nh / gh;
+      return pk.map(function(b) {
+        return {
+          x: Math.max(0, Math.round((b.x - 4) * sx)),
+          y: Math.max(0, Math.round((b.y - 3) * sy)),
+          w: Math.min(nw, Math.round((b.w + 8) * sx)),
+          h: Math.min(nh, Math.round((b.h + 6) * sy))
+        };
+      });
+    }
+
+    async function runHighPrecisionFaceScan(el, forceFullNeural) {
+      if (!aiLoaded || !getEl('chkFace').checked) return [];
+      if (!isMediaElementDrawable(el)) return [];
+      var cw = el.clientWidth, ch = el.clientHeight;
+      var nw = el.videoWidth || el.naturalWidth || cw;
+      var nh = el.videoHeight || el.naturalHeight || ch;
+      if (!cw || !ch || !nw || !nh) return [];
+
+      try {
+        var c = getSafeMirrorCanvas(nw, nh);
+        var ctx = c.getContext('2d');
+        ctx.drawImage(el, 0, 0, nw, nh);
+
+        var isStaticImg = (el.tagName === 'IMG' && (!el.src || el.src.indexOf('http') !== 0));
+        var useOptFlow = getEl('chkOptFlow') && getEl('chkOptFlow').checked && !isStaticImg && !forceFullNeural;
+        opticalFlowFrameCounter++;
+
+        // 1. RASTREAMENTO DE FLUXO ÓPTICO (Optical Flow): Nos frames pares intermediários de vídeo,
+        // desliza os pontos e a caixa em < 2ms sem reexecutar toda a rede neural pesada!
+        if (useOptFlow && (opticalFlowFrameCounter % 2 === 1) && opticalFlowTrackers.length > 0) {
+          var trackedOverlays = trackFacesByOpticalFlow(c, nw, nh, cw, ch);
+          if (trackedOverlays && trackedOverlays.length > 0) {
+            lastFacesOverlay = trackedOverlays;
+            renderCanvasOverlay(cw, ch);
+            return lastFacesOverlay;
+          }
+        }
+
+        // Sensibilidade 0.36 no SSD para nunca perder rostos de boné, perfil parcial ou olhando para cima/baixo
+        var options = ssdLoaded
+          ? new faceapi.SsdMobilenetv1Options({ minConfidence: 0.36, maxResults: 15 })
+          : new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.34 });
+
+        var rawDets = await faceapi.detectAllFaces(c, options).withFaceLandmarks().withFaceDescriptors();
+
+        // Se a cena estiver escura (Visão Noturna) e o SSD não achar na 1ª passada, aplica CLAHE Local e re-escanear
+        if (rawDets.length === 0 && getEl('chkClahe') && getEl('chkClahe').checked) {
+          var nightCanvas = document.createElement('canvas');
+          var nScale = Math.min(1, 640 / Math.max(nw, nh));
+          nightCanvas.width = Math.round(nw * nScale);
+          nightCanvas.height = Math.round(nh * nScale);
+          var nCtx = nightCanvas.getContext('2d', { willReadFrequently: true });
+          nCtx.drawImage(c, 0, 0, nightCanvas.width, nightCanvas.height);
+          applyLocalCLAHE(nCtx, nightCanvas.width, nightCanvas.height, 2.6);
+          var nightDets = await faceapi.detectAllFaces(nightCanvas, options).withFaceLandmarks().withFaceDescriptors();
+          if (nightDets.length > 0) {
+            rawDets = faceapi.resizeResults(nightDets, { width: nw, height: nh });
+          }
+        }
+
+        var validDets = rawDets.filter(function(d) {
+          return isValidHumanFaceGeometry(d, nw, nh);
+        });
+
+        var resized = faceapi.resizeResults(validDets, { width: cw, height: ch });
+        getEl('faceSceneCount').innerText = resized.length;
+
+        if (!fMatch && catDb.length > 0) buildMatch();
+
+        var minP = parseInt(getEl('rngFace').value, 10);
+        var useLaplacian = !getEl('chkLaplacian') || getEl('chkLaplacian').checked;
+        lastFacesOverlay = [];
+        var newTrackers = [];
+
+        for (var j = 0; j < resized.length; j++) {
+          var d = resized[j], b = d.detection.box, m = null;
+          var origDet = validDets[j];
+          var origBox = origDet.detection.box;
+          var pose = estimateFacePose3D(origDet);
+
+          // 2. AVALIAÇÃO DE QUALIDADE (LAPLACIAN VARIANCE) + CROP CONTEXTUAL (+15% ORELHA E QUEIXO)
+          var qualityMeta = analyzeFaceQualityAndContextualSignature(c, origBox, nw, nh);
+          var lapScore = Math.round(qualityMeta.laplacianVariance);
+
+          // 3. VETOR HIPER-DIMENSIONAL DE 512 DIMENSÕES (512D)
+          var query512 = build512DHyperDescriptor(origDet.descriptor, origDet.landmarks, qualityMeta.earChinSignature);
+          lastRawFaceDescriptor = query512;
+
+          var pct = Math.round(d.detection.score * 100);
+          var lbl = pose.isAngled ? ('Não Catalogado (' + pose.label + ')') : 'Não Catalogado';
+
+          // Se o vídeo ao vivo estiver extremamente borrado por movimento brusco (Laplacian < 14), evita falso positivo
+          var skipDueToSevereBlur = (!isStaticImg && useLaplacian && lapScore < 14);
+
+          if (catDb.length > 0 && !skipDueToSevereBlur) {
+            var topRanked = rankReverseFaceSearch(query512, pose.isAngled, 5);
+            renderReverseSearchRankingUI(topRanked, pose.label);
+
+            var directThreshold = pose.isAngled ? 0.458 : 0.445;
+            var reliable = findReliableMatchWithMargin(query512, directThreshold, pose.isAngled);
+            var bs = null;
+
+            if (reliable && reliable.distance <= 0.39 && !pose.isAngled && !qualityMeta.isLowLight) {
+              bs = { label: reliable.person.id, distance: reliable.distance, rootDist: reliable.rootDist, cosine: reliable.cosine, descriptor: query512 };
+            } else {
+              var boosted = await matchWithCapAndShadowBooster(c, origDet, nw, nh, pose, qualityMeta);
+              if (reliable && (!boosted || reliable.distance <= boosted.distance)) {
+                bs = { label: reliable.person.id, distance: reliable.distance, rootDist: reliable.rootDist, cosine: reliable.cosine, descriptor: query512 };
+              } else {
+                bs = boosted;
+              }
+            }
+
+            if (bs && bs.label !== 'unknown') {
+              var cosVal = bs.cosine != null ? bs.cosine : Math.max(0, 1 - (bs.distance * bs.distance) / 2);
+              var simPct = hybridVectorToConfidencePct(bs.distance, cosVal, pose.isAngled);
+              getEl('faceMatchStatusText').innerText = '512D:' + simPct + '% | Lap:' + lapScore;
+
+              var maxAllowedDist = pose.isAngled ? 0.458 : 0.445;
+              var maxAllowedRoot = pose.isAngled ? 0.475 : 0.460;
+              if (bs.distance <= maxAllowedDist && (bs.rootDist == null || bs.rootDist <= maxAllowedRoot) && simPct >= minP) {
+                var candidate = catDb.find(function(p) { return p.id === bs.label; });
+                if (candidate && confirmIdentityAcrossFrames(candidate.id, isStaticImg, bs.distance, pose.isAngled)) {
+                  m = candidate;
+                  pct = simPct;
+                  lbl = m.name + ' (' + pct + '%)';
+                  autoLearnFaceSample(m, bs.descriptor || query512, bs.distance, false, lapScore);
+                }
+              }
+            } else if (topRanked.length > 0) {
+              getEl('faceMatchStatusText').innerText = 'Fora DB (L2:' + topRanked[0].distance.toFixed(2) + ' Lap:' + lapScore + ')';
+            }
+          } else if (skipDueToSevereBlur) {
+            lbl = 'Movimento Rápido (Lap:' + lapScore + ')';
+            getEl('faceMatchStatusText').innerText = 'Filtro Anti-Borrão (Lap:' + lapScore + ')';
+          }
+
+          // Recorta miniatura usando o Crop Contextual (+15% Orelha e Queixo) e aplica CLAHE se estiver escuro
+          var faceCanvas = getEl('lastFaceCanvas');
+          var fCtx = faceCanvas.getContext('2d', { willReadFrequently: true });
+          var ctxCrop = qualityMeta.contextualBox;
+          fCtx.drawImage(c, ctxCrop.x, ctxCrop.y, ctxCrop.width, ctxCrop.height, 0, 0, 48, 48);
+          if (qualityMeta.isLowLight) {
+            applyLocalCLAHE(fCtx, 48, 48, 2.2);
+          }
+          var faceThumb = m ? m.photoDataUrl : faceCanvas.toDataURL('image/jpeg', 0.85);
+
+          showCapturedFaceInUI(m ? m.name : ('Não Catalogado #' + (j + 1)), pct, faceThumb, Boolean(m), j + 1);
+          var dispBox = useLaplacian ? getContextualEarChinBox(b, cw, ch) : b;
+          lastFacesOverlay.push({ box: dispBox, matched: m, label: lbl, pct: pct, opticalTracked: false });
+
+          newTrackers.push({
+            box: dispBox,
+            patch32: qualityMeta.opticalPatch32,
+            matched: m,
+            label: lbl,
+            pct: pct,
+            timestamp: Date.now()
+          });
+
+          if (m) trigFc(m, pct);
+        }
+
+        opticalFlowTrackers = newTrackers;
+        renderCanvasOverlay(cw, ch);
+        return lastFacesOverlay;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    var lastCloudCallTime = 0;
+    async function runGoogleCloudAndGeminiVision(c, nw, nh, apiKey, isLiveVideo) {
+      var now = Date.now();
+      if (now - lastCloudCallTime < (isLiveVideo ? 1250 : 900)) return 0;
+      if (plateCloudBusy) return 0;
+      plateCloudBusy = true;
+      var foundCount = 0;
+      lastCloudCallTime = Date.now();
+
+      try {
+        var maxDim = isLiveVideo ? 960 : 1200;
+        var scale = nw > maxDim ? (maxDim / nw) : 1;
+        var sw = Math.round(nw * scale), sh = Math.round(nh * scale);
+
+        var tempC = document.createElement('canvas'); tempC.width = sw; tempC.height = sh;
+        var tCtx = tempC.getContext('2d');
+        tCtx.filter = 'contrast(112%) brightness(103%)';
+        tCtx.drawImage(c, 0, 0, sw, sh);
+        tCtx.filter = 'none';
+        var b64 = tempC.toDataURL('image/jpeg', isLiveVideo ? 0.86 : 0.92).split(',')[1];
+
+        var modelsToTry = [discoveredVisionModel, 'gemini-3-flash-preview', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+        var uniqueModels = [];
+        for (var u = 0; u < modelsToTry.length; u++) {
+          if (modelsToTry[u] && uniqueModels.indexOf(modelsToTry[u]) === -1) uniqueModels.push(modelsToTry[u]);
+        }
+
+        var promptText = 'Tarefa estrita de OCR veicular: Analise a imagem e localize TODAS as placas de veiculos brasileiros visiveis, incluindo PLACAS CINZAS ANTIGAS (formato AAA-1234 com 3 letras e 4 numeros em chapa cinza de carro ou 2 linhas de moto) e PLACAS MERCOSUL (formato AAA1A23), mesmo em veiculos em movimento. REGRA CRITICA: Se NAO houver placa de veiculo real visivel na imagem (ex: apenas pessoas ou objetos), retorne OBRIGATORIAMENTE []. Somente se houver placa real visivel, retorne JSON puro contendo: "p" (7 caracteres alfanumericos sem traco), "x" e "y" (posicao percentual 0 a 100 do centro da placa), "l" (1 para carro ou 2 para moto), "t" ("CINZA" se os 4 ultimos forem numeros ou "MERCOSUL" se o 5o caractere for letra) e "v" (modelo e cor do veiculo).';
+
+        for (var mIdx = 0; mIdx < uniqueModels.length; mIdx++) {
+          var controller = new AbortController();
+          var timeoutId = setTimeout(function() { controller.abort(); }, 3800);
+          try {
+            var modelName = uniqueModels[mIdx];
+            var gemUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + encodeURIComponent(apiKey);
+            var gemRes = await fetch(gemUrl, {
+              method: 'POST',
+              signal: controller.signal,
+              headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: promptText },
+                    { inline_data: { mime_type: 'image/jpeg', data: b64 } }
+                  ]
+                }]
+              })
+            });
+            clearTimeout(timeoutId);
+
+            if (gemRes.ok) {
+              discoveredVisionModel = modelName;
+              var gemJson = await gemRes.json();
+              var txt = (gemJson && gemJson.candidates && gemJson.candidates[0] && gemJson.candidates[0].content && gemJson.candidates[0].content.parts[0].text) || '';
+              var ini = txt.indexOf('['), fim = txt.lastIndexOf(']');
+              if (ini !== -1 && fim > ini) {
+                var arr = JSON.parse(txt.substring(ini, fim + 1));
+                for (var k = 0; k < arr.length; k++) {
+                  var rawP = cleanAlnum(arr[k].p || '');
+                  var validated = decodePlateBR(rawP);
+                  var p = validated.vp || (isValidPlateBR(rawP) ? rawP : null);
+                  if (p && p.length === 7) {
+                    var isMoto2L = (arr[k].l === 2 || String(arr[k].v || '').toUpperCase().indexOf('MOTO') !== -1);
+                    var boxW = Math.round(nw * (isMoto2L ? 0.14 : 0.13));
+                    var boxH = Math.round(nh * (isMoto2L ? 0.11 : 0.055));
+                    var px = Math.max(0, Math.round(((arr[k].x || 50) / 100) * nw - boxW / 2));
+                    var py = Math.max(0, Math.round(((arr[k].y || 55) / 100) * nh - boxH / 2));
+                    var vehModelCor = arr[k].v || (plateKnowledgeBase[p] && plateKnowledgeBase[p].modelColor) || (isMoto2L ? 'Motocicleta' : 'Veículo');
+                    var vehDesc = classifyPlatePattern(p, isMoto2L ? 'MOTO 2 LINHAS' : (arr[k].t || ''));
+
+                    var optC = (plateKnowledgeBase[p] && plateKnowledgeBase[p].optimalContrast) || 140;
+                    var cropCanvas = cropPurePlateSheet(c, { x: px, y: py, w: boxW, h: boxH }, optC, false);
+                    var thumbData = cropCanvas.toDataURL('image/jpeg', 0.88);
+
+                    learnPlateIntelligence(p, vehModelCor, vehDesc, optC);
+                    dBox.push({ plate: p, x: px, y: py, w: boxW, h: boxH, nw: nw, nh: nh, time: Date.now() });
+                    showPlateChars(p, vehModelCor + ' • ' + vehDesc, 99, thumbData, isMoto2L);
+                    trigPl(p, 99, vehDesc, p, vehModelCor);
+                    foundCount++;
+                  }
+                }
+                break;
+              }
+            }
+          } catch (e) {
+            clearTimeout(timeoutId);
+          }
+        }
+      } finally {
+        plateCloudBusy = false;
+      }
+      return foundCount;
+    }
+
+    async function runFullDualScan(tel) {
+      var el = tel || getValidActiveMedia();
+      if (!el || !isMediaElementDrawable(el)) return;
+
+      await ensureAIReady();
+      if (!isMediaElementDrawable(el)) return;
+      var nw = el.videoWidth || el.naturalWidth || el.clientWidth;
+      var nh = el.videoHeight || el.naturalHeight || el.clientHeight;
+      if (!nw || !nh) return;
+
+      var c = getSafeMirrorCanvas(nw, nh);
+      try {
+        c.getContext('2d').drawImage(el, 0, 0, nw, nh);
+      } catch (drawErr) {
+        return;
+      }
+
+      getEl('scanStatus').innerText = 'ANALISANDO...';
+      var isLive = (el.tagName === 'VIDEO' || (el.src && el.src.indexOf('http') === 0));
+
+      await runHighPrecisionFaceScan(el);
+
+      if (getEl('chkPlate').checked) {
+        var boxes = autoFindPlateIslands(c, nw, nh);
+        var gk = (getEl('geminiKey').value || DEFAULT_VISION_KEY).trim();
+        var cloudHits = 0;
+
+        // Se a imagem inteira for a própria placa (como fotos de placas avulsas cinzas ou Mercosul), adiciona o quadro inteiro
+        if (!isLive && boxes.length < 3) {
+          boxes.push({ x: Math.round(nw * 0.04), y: Math.round(nh * 0.06), w: Math.round(nw * 0.92), h: Math.round(nh * 0.88) });
+        }
+
+        // Dispara leitura na nuvem tanto para imagens estáticas quanto para vídeos de veículos em movimento
+        if (gk) {
+          cloudHits = await runGoogleCloudAndGeminiVision(c, nw, nh, gk, isLive);
+          renderCanvasOverlay(el.clientWidth, el.clientHeight);
+        }
+
+        // Motor Local Multi-Pass (Normalizado + Binarizado para Placas Cinzas Antigas e Movimento)
+        if (ocr && !isBusy && cloudHits === 0 && boxes.length > 0) {
+          isBusy = true;
+          try {
+            var baseContrast = parseInt(getEl('rngLpr').value, 10);
+            for (var i = 0; i < Math.min(boxes.length, 4); i++) {
+              await sleep(15);
+              var b = boxes[i];
+              var passes = [
+                { psm: '7', bin: false, c: baseContrast },
+                { psm: '6', bin: true, c: baseContrast + 20 }
+              ];
+
+              for (var pIdx = 0; pIdx < passes.length; pIdx++) {
+                var passCfg = passes[pIdx];
+                var cc = cropPurePlateSheet(c, b, passCfg.c, passCfg.bin);
+                await ocr.setParameters({ tessedit_pageseg_mode: passCfg.psm });
+                var r = await ocr.recognize(cc);
+                var confScore = (r && r.data && r.data.confidence) || 0;
+                var d = confScore >= 48 ? decodePlateBR(r.data.text || '') : { vp: null };
+
+                if (d.vp) {
+                  var th = cc.toDataURL('image/jpeg', 0.88);
+                  var pat = classifyPlatePattern(d.vp, d.twoLines ? 'MOTO 2 LINHAS' : '1 LINHA');
+                  var knownModel = (plateKnowledgeBase[d.vp] && plateKnowledgeBase[d.vp].modelColor) || null;
+                  learnPlateIntelligence(d.vp, knownModel, pat, passCfg.c);
+                  dBox.push({ plate: d.vp, x: b.x, y: b.y, w: b.w, h: b.h, nw: nw, nh: nh, time: Date.now() });
+                  showPlateChars(d.vp, pat, Math.max(85, Math.round(confScore)), th, d.twoLines);
+                  renderCanvasOverlay(el.clientWidth, el.clientHeight);
+                  trigPl(d.vp, Math.max(85, Math.round(confScore)), pat, d.r, knownModel);
+                  break;
+                }
+              }
+            }
+          } finally {
+            isBusy = false;
+          }
+        }
+      }
+
+      getEl('scanStatus').innerText = 'AUTO ATIVO';
+      renderCanvasOverlay(el.clientWidth, el.clientHeight);
+    }
+
+    async function optClickInspect(e) {
+      var el = getValidActiveMedia();
+      if (!el || !isMediaElementDrawable(el)) return;
+      await ensureAIReady();
+      if (!ocr || !isMediaElementDrawable(el)) return;
+
+      var cv = getEl('hudCanvas'), rc = cv.getBoundingClientRect();
+      var cx = e.clientX - rc.left, cy = e.clientY - rc.top;
+      var cw = el.clientWidth, ch = el.clientHeight;
+      var nw = el.videoWidth || el.naturalWidth || cv.width, nh = el.videoHeight || el.naturalHeight || cv.height;
+      var clickNatX = cx * (nw / cv.width), clickNatY = cy * (nh / cv.height);
+
+      var baseContrast = parseInt(getEl('rngLpr').value, 10);
+      var c = getSafeMirrorCanvas(nw, nh);
+      try {
+        c.getContext('2d').drawImage(el, 0, 0, nw, nh);
+      } catch (drawErr) {
+        return;
+      }
+
+      var shapes = [
+        { w: Math.round(nw * 0.14), h: Math.round(nh * 0.055), mode: '7' },
+        { w: Math.round(nw * 0.18), h: Math.round(nh * 0.14), mode: '6' }
+      ];
+
+      dBox.push({ plate: 'LENDO...', x: Math.max(0, Math.round(clickNatX - shapes[0].w / 2)), y: Math.max(0, Math.round(clickNatY - shapes[0].h / 2)), w: shapes[0].w, h: shapes[0].h, nw: nw, nh: nh, time: Date.now() });
+      renderCanvasOverlay(cw, ch);
+
+      for (var s = 0; s < shapes.length; s++) {
+        var bx = {
+          x: Math.max(0, Math.round(clickNatX - (shapes[s].w / 2))),
+          y: Math.max(0, Math.round(clickNatY - (shapes[s].h / 2))),
+          w: shapes[s].w,
+          h: shapes[s].h
+        };
+        await ocr.setParameters({ tessedit_pageseg_mode: shapes[s].mode });
+        var cc = cropPurePlateSheet(c, bx, baseContrast);
+        var r = await ocr.recognize(cc);
+        var d = decodePlateBR(r.data.text || '');
+
+        if (d.vp) {
+          dBox.pop();
+          var pat = classifyPlatePattern(d.vp, d.twoLines ? 'MOTO 2 LINHAS' : '1 LINHA');
+          learnPlateIntelligence(d.vp, null, pat, baseContrast);
+          dBox.push({ plate: d.vp, x: bx.x, y: bx.y, w: bx.w, h: bx.h, nw: nw, nh: nh, time: Date.now() });
+          showPlateChars(d.vp, pat, 96, cc.toDataURL('image/jpeg', 0.88), d.twoLines);
+          renderCanvasOverlay(cw, ch);
+          trigPl(d.vp, 96, 'Clique Manual (' + pat + ')', d.r, null);
+          return;
+        }
+      }
+
+      var gk = (getEl('geminiKey').value || DEFAULT_VISION_KEY).trim();
+      if (gk) {
+        try {
+          var cropBox = {
+            x: Math.max(0, Math.round(clickNatX - (nw * 0.12))),
+            y: Math.max(0, Math.round(clickNatY - (nh * 0.10))),
+            w: Math.round(nw * 0.24),
+            h: Math.round(nh * 0.20)
+          };
+          var ccVision = cropPurePlateSheet(c, cropBox, 130);
+          var b64Crop = ccVision.toDataURL('image/jpeg', 0.95).split(',')[1];
+          var promptText = 'Leia a placa de veiculo brasileiro nesta imagem recortada (1 linha carro ou 2 linhas moto). Se nao houver placa, retorne []. Se houver, retorne APENAS JSON puro com os 7 caracteres ("p"), linhas ("l": 1 ou 2) e modelo/cor ("v").';
+          var gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + discoveredVisionModel + ':generateContent?key=' + encodeURIComponent(gk), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gk },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: 'image/jpeg', data: b64Crop } }] }] })
+          });
+
+          if (gemRes.ok) {
+            var gemJson = await gemRes.json();
+            var txt = (gemJson && gemJson.candidates && gemJson.candidates[0] && gemJson.candidates[0].content && gemJson.candidates[0].content.parts[0].text) || '';
+            var ini = txt.indexOf('['), fim = txt.lastIndexOf(']');
+            if (ini !== -1 && fim > ini) {
+              var arr = JSON.parse(txt.substring(ini, fim + 1));
+              if (arr.length > 0 && arr[0].p) {
+                var pV = cleanAlnum(arr[0].p);
+                if (pV.length === 7 && isValidPlateBR(pV)) {
+                  dBox.pop();
+                  var is2L = arr[0].l === 2;
+                  var vModCor = arr[0].v || (is2L ? 'Motocicleta' : 'Veículo');
+                  var patV = classifyPlatePattern(pV, is2L ? 'MOTO 2 LINHAS' : '1 LINHA');
+                  learnPlateIntelligence(pV, vModCor, patV, 130);
+                  dBox.push({ plate: pV, x: cropBox.x, y: cropBox.y, w: cropBox.w, h: cropBox.h, nw: nw, nh: nh, time: Date.now() });
+                  showPlateChars(pV, vModCor + ' • ' + patV, 99, ccVision.toDataURL('image/jpeg', 0.88), is2L);
+                  renderCanvasOverlay(cw, ch);
+                  trigPl(pV, 99, 'Clique Manual (' + patV + ')', pV, vModCor);
+                  return;
+                }
+              }
+            }
+          }
+        } catch (err) {}
+      }
+
+      dBox.pop();
+      renderCanvasOverlay(cw, ch);
+      log('Clique bem no centro dos caracteres da placa para leitura manual.', '#fcd34d');
+    }
+
+    function renderCanvasOverlay(cw, ch) {
+      var cv = getEl('hudCanvas');
+      if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+      var ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, cw, ch);
+
+      var now = Date.now();
+      dBox = dBox.filter(function(b) { return now - b.time < 30000; });
+      for (var i = 0; i < dBox.length; i++) {
+        var pb = dBox[i];
+        var sx = cw / pb.nw, sy = ch / pb.nh;
+        var bx = pb.x * sx, by = pb.y * sy, bw = pb.w * sx, bh = pb.h * sy;
+
+        ctx.strokeStyle = pb.plate === 'LENDO...' ? '#38bdf8' : '#facc15';
+        ctx.lineWidth = 3; ctx.strokeRect(bx, by, bw, bh);
+
+        var tag = pb.plate === 'LENDO...' ? '🎯 ' + pb.plate : 'PLACA: ' + pb.plate;
+        ctx.font = 'bold 14px Courier New, monospace';
+        var tw = Math.max(bw, ctx.measureText(tag).width + 16);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(bx, Math.max(0, by - 26), tw, 26);
+        ctx.strokeStyle = pb.plate === 'LENDO...' ? '#38bdf8' : '#facc15';
+        ctx.lineWidth = 1.5; ctx.strokeRect(bx, Math.max(0, by - 26), tw, 26);
+        ctx.fillStyle = pb.plate === 'LENDO...' ? '#38bdf8' : '#fde047';
+        ctx.fillText(tag, bx + 6, Math.max(18, by - 8));
+      }
+
+      for (var j = 0; j < lastFacesOverlay.length; j++) {
+        var f = lastFacesOverlay[j], b = f.box, m = f.matched;
+        ctx.strokeStyle = m ? '#10b981' : (f.opticalTracked ? '#a78bfa' : '#38bdf8');
+        ctx.lineWidth = 3;
+        ctx.strokeRect(b.x, b.y, b.width, b.height);
+        ctx.fillStyle = m ? '#059669' : (f.opticalTracked ? '#6d28d9' : '#0284c7');
+        ctx.font = 'bold 13px sans-serif';
+        var tagLbl = f.opticalTracked ? ('⚡ ' + f.label) : f.label;
+        ctx.fillRect(b.x, Math.max(0, b.y - 24), ctx.measureText(tagLbl).width + 14, 24);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(tagLbl, b.x + 6, Math.max(16, b.y - 7));
+      }
+    }
+
+    async function execA(code, argName, argVal, fb) {
+      try {
+        var fn = new Function(argName, 'return (async function(){ ' + code + ' })();');
+        var r = await fn(argVal);
+        return (r && typeof r === 'object') ? r : fb;
+      } catch (e) { return fb; }
+    }
+
+    function checkIsPositiveAlert(obj) {
+      if (!obj || typeof obj !== 'object') return false;
+      var alertaField = String(obj.ALERTA || '').toUpperCase().trim();
+      var resultadoField = String(obj.RESULTADO || '').toUpperCase().trim();
+      var sitField = String(obj.SITUACAO || obj.SITUACAO_VEICULO || obj.STATUS || '').toUpperCase().trim();
+
+      if (alertaField === 'NORMAL' || resultadoField === 'NEGATIVO') return false;
+      if (sitField.indexOf('SEM MANDADO') !== -1 || sitField.indexOf('NADA CONSTA') !== -1 || sitField.indexOf('SEM RESTR') !== -1 || sitField.indexOf('NAO CADASTRADO') !== -1 || sitField.indexOf('NÃO CADASTRADO') !== -1 || sitField === 'NORMAL') {
+        return false;
+      }
+      if (alertaField === 'CRITICO' || resultadoField === 'POSITIVO') return true;
+      if (sitField.indexOf('MANDADO') !== -1 || sitField.indexOf('PRISAO') !== -1 || sitField.indexOf('PRISÃO') !== -1 || sitField.indexOf('PROCURAD') !== -1 || sitField.indexOf('FORAGID') !== -1) {
+        return true;
+      }
+      if (sitField.indexOf('ROUBAD') !== -1 || sitField.indexOf('FURTAD') !== -1 || sitField.indexOf('CLONAD') !== -1 || sitField.indexOf('APREENS') !== -1) {
+        return true;
+      }
+      return false;
+    }
+
+    function playCriticalSiren() {
+      beep(960, 190);
+      setTimeout(function() { beep(720, 190); }, 210);
+      setTimeout(function() { beep(960, 340); }, 420);
+    }
+
+    function showTopCriticalBanner(textMsg) {
+      var old = getEl('alertaPositivoPlanilha');
+      if (old) old.remove();
+      var banner = document.createElement('div');
+      banner.id = 'alertaPositivoPlanilha';
+      banner.style.cssText = 'position:fixed; top:56px; left:50%; transform:translateX(-50%); background:#dc2626; color:#fff; padding:10px 20px; border-radius:8px; font-weight:900; font-size:13px; z-index:9999; border:2px solid #fef08a; box-shadow:0 8px 25px rgba(220,38,38,0.85); display:flex; align-items:center; gap:14px;';
+      banner.innerHTML = '<span>' + escapeHtml(textMsg) + '</span><button type="button" onclick="this.parentElement.remove()" style="background:#7f1d1d; color:#fff; padding:3px 9px; border-radius:5px; font-weight:900;">✕</button>';
+      document.body.appendChild(banner);
+    }
+
+    function clearAllCards() {
+      getEl('hudCards').innerHTML = '';
+      var b = getEl('alertaPositivoPlanilha');
+      if (b) b.remove();
+      resetFaceLockManual();
+    }
+
+    window.dismissHudCard = function(btnEl) {
+      var card = btnEl.closest('.hud-card');
+      if (card) card.remove();
+    };
+
+    async function trigFc(p, pct) {
+      if (lastRecognizedFaceId === p.id) return;
+      if (Date.now() - (coolMap.get(p.id) || 0) < 4000) return;
+
+      lastRecognizedFaceId = p.id;
+      coolMap.set(p.id, Date.now());
+
+      var stLock = getEl('dockLockStatus');
+      if (stLock) {
+        stLock.innerText = 'Trava: ' + p.name.split(' ')[0];
+        stLock.style.color = '#fcd34d';
+      }
+
+      var rawData = await execA(getEl('apiFace').value, 'person', p, { INDIVIDUO: p.name, DOC: p.doc || '-' });
+      var isCritico = checkIsPositiveAlert(rawData);
+
+      var orderedFaceData = {
+        INDIVIDUO: rawData.INDIVIDUO || p.name,
+        DOC: rawData.DOC || rawData.DOCUMENTO || rawData.CPF || p.doc || '-',
+        SITUACAO: rawData.SITUACAO || (isCritico ? '🚨 MANDADO DE PRISÃO EM ABERTO' : 'SEM MANDADO NA PLANILHA'),
+        ALERTA: isCritico ? 'CRÍTICO (MANDADO EM ABERTO)' : 'NORMAL (SEM RESTRIÇÃO)',
+        HORA: rawData.HORA || new Date().toLocaleTimeString('pt-BR')
+      };
+      if (rawData.PROCESSO && rawData.PROCESSO !== '-') orderedFaceData.PROCESSO = rawData.PROCESSO;
+
+      if (isCritico) {
+        playCriticalSiren();
+        log('🚨 MANDADO DE PRISÃO EM ABERTO: ' + p.name + ' (Doc: ' + orderedFaceData.DOC + ') -> ' + orderedFaceData.SITUACAO, '#ef4444');
+        showTopCriticalBanner('🚨 MANDADO DE PRISÃO EM ABERTO: ' + p.name + ' — ' + orderedFaceData.SITUACAO);
+      } else {
+        beep(880, 150);
+        log('RECONHECIMENTO FACIAL POSITIVO: ' + p.name + ' (' + pct + '%) — Sem Mandado', '#10b981');
+      }
+
+      spawnCard({ f: true, critico: isCritico, t: p.name, s: isCritico ? '🚨 MANDADO DE PRISÃO EM ABERTO' : ('Biometria Confirmada: ' + pct + '%'), i: p.photoDataUrl, d: orderedFaceData });
+      addHistory({ type: 'FACE', critico: isCritico, title: p.name, subtitle: isCritico ? orderedFaceData.SITUACAO : ('Sem Restrição (' + pct + '%)'), img: p.photoDataUrl, time: orderedFaceData.HORA });
+    }
+
+    async function trigPl(pl, cf, orig, rw, vehModelCor) {
+      if (!pl || pl.length < 7) return;
+      if (Date.now() - (coolMap.get(pl) || 0) < 3500) return;
+      coolMap.set(pl, Date.now());
+
+      var rawData = await execA(getEl('apiPlate').value, 'plate', pl, { PLACA: pl });
+      var isCritico = checkIsPositiveAlert(rawData);
+
+      var sheetModel = (rawData.MODELO && rawData.MODELO !== 'Não informado' && rawData.MODELO !== '-') ? rawData.MODELO : '';
+      var learnedModel = (plateKnowledgeBase[pl] && plateKnowledgeBase[pl].modelColor) ? plateKnowledgeBase[pl].modelColor : '';
+      var finalModelCor = sheetModel || vehModelCor || learnedModel || (isLet(pl.charAt(4)) ? 'Veículo Mercosul' : 'Veículo Padrão Antigo');
+
+      learnPlateIntelligence(pl, finalModelCor, orig, null);
+
+      var orderedPlateData = {
+        PLACA: pl,
+        MODELO_COR: finalModelCor,
+        FORMATO: orig,
+        SITUACAO: rawData.SITUACAO_VEICULO || rawData.SITUACAO || (isCritico ? '🚨 VEÍCULO ROUBADO / FURTADO' : 'SEM RESTRIÇÃO NA PLANILHA'),
+        ALERTA: isCritico ? 'CRÍTICO (ROUBO / RESTRIÇÃO)' : 'NORMAL (REGULAR)',
+        HORA: rawData.HORA || new Date().toLocaleTimeString('pt-BR')
+      };
+      if (rawData.OBS && rawData.OBS !== '-') orderedPlateData.OBS = rawData.OBS;
+
+      if (isCritico) {
+        playCriticalSiren();
+        log('🚨 VEÍCULO COM RESTRIÇÃO NA PLANILHA: ' + pl + ' (' + finalModelCor + ') -> ' + orderedPlateData.SITUACAO, '#ef4444');
+        showTopCriticalBanner('🚨 VEÍCULO ROUBADO / RESTRIÇÃO: ' + pl + ' (' + finalModelCor + ') — ' + orderedPlateData.SITUACAO);
+      } else {
+        beep(620, 180);
+        log('PLACA IDENTIFICADA: ' + pl + ' | Veículo: ' + finalModelCor + ' | ' + orig, '#facc15');
+      }
+
+      spawnCard({ f: false, critico: isCritico, t: pl, s: isCritico ? ('🚨 ' + finalModelCor) : (finalModelCor + ' (' + cf + '%)'), i: null, d: orderedPlateData });
+      addHistory({ type: 'PLATE', critico: isCritico, title: pl + ' • ' + finalModelCor, subtitle: isCritico ? orderedPlateData.SITUACAO : orig, img: null, time: orderedPlateData.HORA });
+    }
+
+    function spawnCard(o) {
+      var ls = getEl('hudCards'), cd = document.createElement('div'), rHtml = '';
+      var isCritico = Boolean(o.critico);
+      var entries = Object.entries(o.d || {});
+      for (var i = 0; i < entries.length; i++) {
+        var k = entries[i][0], v = entries[i][1];
+        var valCol = '#fcd34d';
+        if (isCritico && (k === 'SITUACAO' || k === 'ALERTA')) valCol = '#fecaca';
+        else if (!isCritico && (k === 'SITUACAO' || k === 'ALERTA')) valCol = '#6ee7b7';
+        rHtml += '<div style="display:flex; justify-content:space-between; font-size:11px; border-bottom:1px solid #1e293b; padding:3px 0;"><span style="color:#94a3b8;">' + escapeHtml(k) + ':</span><strong style="color:' + valCol + '; font-family:monospace; text-align:right; max-width:195px; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(v) + '</strong></div>';
+      }
+      cd.className = 'hud-card' + (o.f ? ' face' : '');
+      if (isCritico) {
+        cd.style.borderLeft = '5px solid #ef4444';
+        cd.style.background = 'rgba(69, 10, 10, 0.96)';
+        cd.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.75)';
+      }
+      var imgTag = o.i ? '<img src="' + escapeHtml(o.i) + '" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:2px solid ' + (isCritico ? '#ef4444' : '#10b981') + ';">' : '';
+      var tituloCard = isCritico ? ('🚨 ' + o.t) : o.t;
+      cd.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' + imgTag + '<div style="flex:1;"><strong style="font-size:15px; font-family:monospace; color:#fff;">' + escapeHtml(tituloCard) + '</strong><div style="font-size:10px; color:' + (isCritico ? '#fef08a' : '#38bdf8') + '; font-weight:700;">' + escapeHtml(o.s) + '</div></div><button type="button" style="background:rgba(225,29,72,0.25); border:1px solid rgba(244,63,94,0.45); border-radius:4px; color:#fda4af; padding:4px 8px; font-weight:900;" onclick="window.dismissHudCard(this)">✕</button></div><div style="margin-top:6px;">' + rHtml + '</div>';
+      ls.prepend(cd);
+    }
+
+    function strtLoop(el) {
+      loopAct = true;
+      var tick = 0;
+      async function faceFastLoop() {
+        if (!loopAct) return;
+        if (el.tagName !== 'VIDEO' || (!el.paused && !el.ended)) {
+          tick++;
+          await runHighPrecisionFaceScan(el);
+          // Frequência 2x mais rápida (a cada 3 ticks ~540ms) para capturar veículos em movimento no vídeo
+          if (tick % 3 === 0 && !plateCloudBusy && !isBusy) {
+            runFullDualScan(el);
+          }
+        }
+        if (loopAct) setTimeout(faceFastLoop, 180);
+      }
+      faceFastLoop();
+    }
+
+    async function unlockCams() {
+      try {
+        var s = await navigator.mediaDevices.getUserMedia({ video: true });
+        s.getTracks().forEach(function(t) { t.stop(); });
+        refreshCams();
+        log('Câmeras USB / HDMI liberadas.', '#10b981');
+      } catch (e) { log('Permita o acesso à câmera.', '#fb7185'); }
+    }
+
+    async function refreshCams() {
+      try {
+        var d = await navigator.mediaDevices.enumerateDevices();
+        var cs = d.filter(function(x) { return x.kind === 'videoinput'; });
+        var sel = getEl('cameraSelect');
+        sel.innerHTML = cs.length ? '' : '<option value="">Nenhuma câmera</option>';
+        for (var i = 0; i < cs.length; i++) {
+          var o = document.createElement('option');
+          o.value = cs[i].deviceId;
+          o.text = cs[i].label || ('Câmera #' + (i + 1));
+          sel.appendChild(o);
+        }
+      } catch (e) {}
+    }
+
+    async function startUsb() {
+      stopMedia();
+      await ensureAIReady();
+      var id = getEl('cameraSelect').value;
+      try {
+        aStream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId: { exact: id }, width: 1280 } : true });
+        getEl('emptyStg').classList.add('hidden');
+        getEl('iEl').classList.add('hidden');
+        var v = getEl('vEl');
+        v.classList.remove('hidden'); v.srcObject = aStream;
+        v.onloadedmetadata = function() { safePlayVideo(v); strtLoop(v); log('Captura Ao Vivo iniciada (Conectada à Planilha).', '#10b981'); };
+      } catch (e) { log('Erro USB: ' + e.message, '#fb7185'); }
+    }
+
+    async function startIp() {
+      var u = getEl('ipCamUrl').value.trim();
+      if (!u) return;
+      stopMedia();
+      await ensureAIReady();
+      getEl('emptyStg').classList.add('hidden');
+      getEl('vEl').classList.add('hidden');
+      var img = getEl('iEl');
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        if (!loopAct) strtLoop(img);
+      };
+      img.onerror = function() {
+        log('Aviso: Stream IP indisponível ou bloqueado por CORS no endereço informado.', '#fb7185');
+      };
+      img.classList.remove('hidden');
+      img.src = u;
+      log('Conectando ao Stream Celular IP / Drone...', '#10b981');
+    }
+
+    function handleFile(e) {
+      var f = e.target.files[0]; if (!f) return;
+      stopMedia();
+      lastFacesOverlay = [];
+      resetFaceLockManual();
+      resetPlateDisplayUI();
+      getEl('topDetectionsStrip').innerHTML = '<span class="empty-msg" style="font-size:11px; color:#38bdf8;">Analisando mídia carregada...</span>';
+      getEl('emptyStg').classList.add('hidden');
+
+      if (currentMediaObjectUrl) {
+        try { URL.revokeObjectURL(currentMediaObjectUrl); } catch (err) {}
+      }
+      var u = URL.createObjectURL(f);
+      currentMediaObjectUrl = u;
+
+      if (f.type.startsWith('image/')) {
+        showVideoControlsUI(false);
+        getEl('vEl').classList.add('hidden');
+        var img = getEl('iEl');
+        img.classList.remove('hidden');
+        img.onload = async function() {
+          log('Imagem carregada: executando Averiguação Automática...', '#38bdf8');
+          await runFullDualScan(img);
+        };
+        img.src = u;
+      } else {
+        showVideoControlsUI(true);
+        currentVideoPlaybackRate = 1.0;
+        updateSpeedBadges(1.0);
+        getEl('iEl').classList.add('hidden');
+        var v = getEl('vEl');
+        v.classList.remove('hidden');
+        v.src = u;
+        v.controls = true;
+        v.playbackRate = 1.0;
+        v.onloadeddata = async function() {
+          await ensureAIReady();
+          safePlayVideo(v);
+          strtLoop(v);
+          log('Vídeo carregado! Use os botões de velocidade (- Vel / + Vel), voltar (-5s), avançar (+5s) ou Pausar.', '#10b981');
+        };
+        v.onended = function() {
+          log('Vídeo finalizado. Clique em "🔄 Rever" ou "⏪ -5s" para analisar novamente.', '#fcd34d');
+        };
+      }
+    }
+
+    function stopMedia() {
+      loopAct = false;
+      if (aStream) aStream.getTracks().forEach(function(t) { t.stop(); });
+      var v = getEl('vEl');
+      if (v) {
+        v.pause();
+        v.srcObject = null;
+        v.removeAttribute('src');
+        v.classList.add('hidden');
+      }
+      var c = getEl('hudCanvas');
+      if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+      var i = getEl('iEl');
+      if (i) {
+        i.onload = null;
+        i.onerror = null;
+        i.removeAttribute('src');
+        i.classList.add('hidden');
+      }
+      showVideoControlsUI(false);
+    }
+
+    function handleInvestigate(e) {
+      handleFile(e);
+      switchTab('tabConsulta');
+    }
+
+    async function searchPlate() {
+      var p = cleanAlnum(getEl('manPlate').value);
+      if (p.length < 7) { log('Informe os 7 caracteres da placa.', '#fb7185'); return; }
+      var fmtP = classifyPlatePattern(p, '');
+      showPlateChars(p, fmtP, 100, null);
+      coolMap.delete(p);
+      await trigPl(p, 100, fmtP, p, null);
+    }
+
+    async function searchPerson() {
+      var q = getEl('manPerson').value.trim();
+      if (!q) return;
+      var qLow = q.toLowerCase();
+      var fd = catDb.find(function(x) { return x.name.toLowerCase().includes(qLow) || (x.doc && x.doc.toLowerCase().includes(qLow)); });
+      if (fd && lastRawFaceDescriptor) {
+        await autoLearnFaceSample(fd, lastRawFaceDescriptor, 0.35, true);
+      }
+      var onlyDigits = q.replace(/[^0-9]/g, '');
+      var o = fd || { id: 'M_' + Date.now(), name: q, doc: onlyDigits.length >= 9 ? onlyDigits : q, photoDataUrl: null };
+      resetFaceLockManual();
+      coolMap.delete(o.id);
+      await trigFc(o, 100);
+    }
+
+    function initDB() {
+      try {
+        var req = indexedDB.open('SentinelaV21_DB', 1);
+        req.onupgradeneeded = function(e) {
+          if (!e.target.result.objectStoreNames.contains('catalogados')) {
+            e.target.result.createObjectStore('catalogados', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = function(e) { db = e.target.result; loadDB(); };
+      } catch (e) {}
+    }
+
+    function loadDB() {
+      if (!db) return;
+      try {
+        db.transaction('catalogados', 'readonly').objectStore('catalogados').getAll().onsuccess = function(e) {
+          var raw = e.target.result || [];
+          catDb = [];
+          for (var i = 0; i < raw.length; i++) {
+            var it = raw[i], vec = it.descriptor || it.desc;
+            if (it && it.name && vec) {
+              var baseVec = extractCore128FromAny(new Float32Array(vec));
+              var base512 = build512DHyperDescriptor(baseVec, null, null);
+              var rawList = it.descriptors ? it.descriptors.map(function(d) { return extractCore128FromAny(new Float32Array(d)); }) : [baseVec];
+              // Purifica automaticamente amostras secundárias que divirjam > 0.34 da foto original de cadastro
+              var cleanDescArr = [baseVec];
+              var clean512Arr = [base512];
+              for (var k = 1; k < rawList.length; k++) {
+                var cand512 = build512DHyperDescriptor(rawList[k], null, null);
+                if (compute512DEuclideanDistance(base512, cand512) <= 0.34) {
+                  cleanDescArr.push(rawList[k]);
+                  clean512Arr.push(cand512);
+                }
+              }
+              var centroid512 = computeCentroidDescriptor(clean512Arr);
+              catDb.push({
+                id: it.id, name: it.name, doc: it.doc || 'Banco', photoDataUrl: it.photoDataUrl || '',
+                desc: baseVec,
+                desc512: base512,
+                descriptors: cleanDescArr,
+                descriptors512: clean512Arr,
+                centroid512: centroid512,
+                centroid: extractCore128FromAny(centroid512)
+              });
+            }
+          }
+          renderDB();
+          buildMatch();
+          updateLearnedBadgeCount();
+        };
+      } catch (e) {}
+    }
+
+    async function saveP(p) {
+      var coreDesc = extractCore128FromAny(p.desc);
+      var hyper512 = p.desc512 || build512DHyperDescriptor(coreDesc, null, null);
+      p.desc = coreDesc;
+      p.desc512 = hyper512;
+
+      var existing = catDb.find(function(i) { return i.name.toLowerCase() === p.name.toLowerCase(); });
+      if (existing && p.desc) {
+        if (!existing.descriptors) existing.descriptors = [existing.desc];
+        if (!existing.descriptors512) existing.descriptors512 = [existing.desc512 || build512DHyperDescriptor(existing.desc, null, null)];
+        if (existing.descriptors.length < 18) {
+          existing.descriptors.push(coreDesc);
+          existing.descriptors512.push(hyper512);
+        }
+        existing.desc = coreDesc;
+        existing.desc512 = hyper512;
+        existing.centroid512 = computeCentroidDescriptor(existing.descriptors512);
+        existing.centroid = extractCore128FromAny(existing.centroid512);
+        if (p.doc && p.doc !== 'Manual') existing.doc = p.doc;
+        existing.photoDataUrl = p.photoDataUrl || existing.photoDataUrl;
+        p = existing;
+      } else {
+        if (!p.descriptors && p.desc) p.descriptors = [coreDesc];
+        if (!p.descriptors512) p.descriptors512 = p.descriptors.map(function(v) { return build512DHyperDescriptor(v, null, null); });
+        p.centroid512 = computeCentroidDescriptor(p.descriptors512);
+        p.centroid = extractCore128FromAny(p.centroid512);
+        var idx = catDb.findIndex(function(i) { return i.id === p.id; });
+        if (idx >= 0) catDb[idx] = p; else catDb.push(p);
+      }
+
+      if (db) {
+        try {
+          db.transaction('catalogados', 'readwrite').objectStore('catalogados').put({
+            id: p.id, name: p.name, doc: p.doc, photoDataUrl: p.photoDataUrl,
+            descriptor: Array.from(p.desc),
+            descriptors: (p.descriptors || [p.desc]).map(function(d) { return Array.from(extractCore128FromAny(d)); })
+          });
+        } catch (e) {}
+      }
+    }
+
+    function buildMatch() {
+      if (!aiLoaded || !catDb.length) { fMatch = null; return; }
+      try {
+        fMatch = new faceapi.FaceMatcher(catDb.map(function(p) {
+          var allVecs = (p.descriptors || [p.desc]).map(function(v) { return extractCore128FromAny(v); });
+          if (p.centroid) allVecs.push(extractCore128FromAny(p.centroid));
+          return new faceapi.LabeledFaceDescriptors(p.id, allVecs);
+        }), 0.455);
+      } catch (e) {}
+    }
+
+    function getBio(f) {
+      return new Promise(function(r) {
+        var u = URL.createObjectURL(f), img = new Image();
+        img.onload = async function() {
+          try {
+            var natW = img.naturalWidth || img.width || 600;
+            var natH = img.naturalHeight || img.height || 600;
+            var maxDim = 720;
+            var scale = Math.min(1, maxDim / Math.max(natW, natH));
+            var cw = Math.round(natW * scale), ch = Math.round(natH * scale);
+
+            var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+            var ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, cw, ch);
+
+            var options = ssdLoaded
+              ? new faceapi.SsdMobilenetv1Options({ minConfidence: 0.34 })
+              : new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.32 });
+            var d = await faceapi.detectSingleFace(c, options).withFaceLandmarks().withFaceDescriptor();
+            if (!d) {
+              applyLocalCLAHE(ctx, cw, ch, 2.4);
+              d = await faceapi.detectSingleFace(c, options).withFaceLandmarks().withFaceDescriptor();
+            }
+            URL.revokeObjectURL(u);
+            if (!d) return r(null);
+
+            var b = d.detection.box;
+            var qMeta = analyzeFaceQualityAndContextualSignature(c, b, cw, ch);
+            var ctxCrop = qMeta.contextualBox;
+            var t = document.createElement('canvas'); t.width = 72; t.height = 72;
+            t.getContext('2d').drawImage(c, ctxCrop.x, ctxCrop.y, ctxCrop.width, ctxCrop.height, 0, 0, 72, 72);
+            var hyper512 = build512DHyperDescriptor(d.descriptor, d.landmarks, qMeta.earChinSignature);
+            r({ desc: d.descriptor, desc512: hyper512, thumb: t.toDataURL('image/jpeg', 0.85) });
+          } catch (e) { URL.revokeObjectURL(u); r(null); }
+        };
+        img.onerror = function() { URL.revokeObjectURL(u); r(null); };
+        img.src = u;
+      });
+    }
+
+    async function quickEnrollLive() {
+      var nameVal = getEl('quickEnrollName').value.trim();
+      if (!nameVal && catDb.length > 0) nameVal = catDb[catDb.length - 1].name;
+      if (!nameVal) { log('Digite o seu nome no campo ao lado do botão Vincular Agora.', '#fb7185'); return; }
+      getEl('sName').value = nameVal;
+      getEl('sDoc').value = 'Biometria Ao Vivo';
+      await enrollFromLiveCamera();
+      getEl('quickEnrollName').value = '';
+    }
+
+    async function enrollFromLiveCamera() {
+      var n = getEl('sName').value.trim();
+      var doc = getEl('sDoc').value.trim() || 'Câmera Ao Vivo';
+      if (!n) { log('Digite primeiro o seu Nome no campo acima.', '#fb7185'); return; }
+
+      var el = getValidActiveMedia();
+      if (!el || !isMediaElementDrawable(el)) { log('Inicie a câmera ao vivo ou carregue uma imagem válida primeiro na aba 1. Operação.', '#fb7185'); return; }
+
+      await ensureAIReady();
+      var nw = el.videoWidth || el.naturalWidth || el.clientWidth;
+      var nh = el.videoHeight || el.naturalHeight || el.clientHeight;
+      var c = getSafeMirrorCanvas(nw, nh);
+      try {
+        c.getContext('2d').drawImage(el, 0, 0, nw, nh);
+      } catch (drawErr) {
+        log('A mídia ativa ainda não terminou de carregar.', '#fb7185');
+        return;
+      }
+
+      var options = ssdLoaded
+        ? new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 })
+        : new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.35 });
+      var det = await faceapi.detectSingleFace(c, options).withFaceLandmarks().withFaceDescriptor();
+      if (!det) { log('Olhe de frente para a câmera para capturar o rosto.', '#fb7185'); return; }
+
+      var b = det.detection.box;
+      var qMeta = analyzeFaceQualityAndContextualSignature(c, b, nw, nh);
+      var ctxCrop = qMeta.contextualBox;
+      var t = document.createElement('canvas'); t.width = 72; t.height = 72;
+      t.getContext('2d').drawImage(c, ctxCrop.x, ctxCrop.y, ctxCrop.width, ctxCrop.height, 0, 0, 72, 72);
+      var hyper512 = build512DHyperDescriptor(det.descriptor, det.landmarks, qMeta.earChinSignature);
+
+      await saveP({ id: 'CAM_' + Date.now(), name: n, doc: doc, photoDataUrl: t.toDataURL('image/jpeg', 0.85), desc: det.descriptor, desc512: hyper512 });
+      buildMatch();
+      renderDB();
+      getEl('sName').value = '';
+      resetFaceLockManual();
+      log('Rosto 512D de ' + n + ' vinculado (com Crop +15% Orelha/Queixo) e conectado à planilha!', '#10b981');
+      await runHighPrecisionFaceScan(el, true);
+    }
+
+    async function uploadBulk(e) {
+      await ensureAIReady();
+      var fs = Array.from(e.target.files).filter(function(f) { return f.type.startsWith('image/'); });
+      if (!fs.length) return;
+      getEl('bulkProg').classList.remove('hidden');
+      for (var i = 0; i < fs.length; i++) {
+        var rawN = fs[i].name;
+        var dot = rawN.lastIndexOf('.');
+        var n = (dot > 0 ? rawN.substring(0, dot) : rawN).split('_').join(' ').split('-').join(' ');
+        getEl('bulkTxt').innerText = n; getEl('bulkCnt').innerText = (i + 1) + '/' + fs.length;
+        var b = await getBio(fs[i]);
+        if (b) await saveP({ id: 'C_' + Date.now() + '_' + i, name: n, doc: 'Pasta Drive', photoDataUrl: b.thumb, desc: b.desc, desc512: b.desc512 });
+        if (i % 5 === 0) renderDB();
+        await sleep(20);
+      }
+      buildMatch(); renderDB();
+      getEl('bulkProg').classList.add('hidden');
+      log('Pasta facial importada em 512D com Crop Contextual!', '#10b981');
+    }
+
+    async function addSingle() {
+      await ensureAIReady();
+      var n = getEl('sName').value.trim(), d = getEl('sDoc').value.trim() || 'Manual', fs = getEl('sFile').files;
+      if (!n || !fs.length) { log('Preencha o Nome e escolha a foto.', '#fb7185'); return; }
+      var savedCount = 0;
+      for (var i = 0; i < fs.length; i++) {
+        var b = await getBio(fs[i]);
+        if (b) {
+          await saveP({ id: 'M_' + Date.now() + '_' + i, name: n, doc: d, photoDataUrl: b.thumb, desc: b.desc, desc512: b.desc512 });
+          savedCount++;
+        }
+      }
+      if (!savedCount) { log('Rosto não detectado na foto enviada.', '#fb7185'); return; }
+      buildMatch(); renderDB();
+      getEl('sName').value = '';
+      resetFaceLockManual();
+      log('Biometria 512D salva e conectada à planilha!', '#10b981');
+    }
+
+    function renderDB() {
+      getEl('dbCount').innerText = catDb.length;
+      getEl('listTotalBadge').innerText = catDb.length;
+      updateLearnedBadgeCount();
+      var bx = getEl('catBox'); if (!bx) return;
+      bx.innerHTML = '';
+      var q = (getEl('sSearch') ? getEl('sSearch').value : '').toLowerCase();
+      var f = catDb.filter(function(x) { return x.name.toLowerCase().includes(q) || (x.doc && x.doc.toLowerCase().includes(q)); }).slice(-80).reverse();
+      for (var i = 0; i < f.length; i++) {
+        var p = f[i], row = document.createElement('div');
+        var samples = p.descriptors ? p.descriptors.length : 1;
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px; border-radius:6px;';
+        row.innerHTML = '<div style="display:flex; gap:8px; align-items:center; overflow:hidden;"><img src="' + escapeHtml(p.photoDataUrl) + '" style="width:32px; height:32px; border-radius:4px; object-fit:cover;"><div style="font-size:12px; font-weight:700; color:#fff;">' + escapeHtml(p.name) + '<div style="font-size:10px; color:#10b981;">' + samples + ' amostra(s) IA • ' + escapeHtml(p.doc) + '</div></div></div><button type="button" style="background:none; color:#fb7185; padding:4px;" onclick="remP(\'' + escapeHtml(p.id) + '\')">X</button>';
+        bx.appendChild(row);
+      }
+    }
+
+    function remP(id) {
+      catDb = catDb.filter(function(x) { return x.id !== id; });
+      if (db) db.transaction('catalogados', 'readwrite').objectStore('catalogados').delete(id);
+      buildMatch(); renderDB();
+      if (lastRecognizedFaceId === id) resetFaceLockManual();
+    }
+
+    function wipeDB() {
+      catDb = [];
+      if (db) db.transaction('catalogados', 'readwrite').objectStore('catalogados').clear();
+      buildMatch(); renderDB();
+      resetFaceLockManual();
+      log('Banco facial zerado.', '#fcd34d');
+    }
+
+    function exportDB() {
+      if (!catDb.length) { log('Banco vazio para exportar.', '#fb7185'); return; }
+      var b = new Blob([JSON.stringify(catDb.map(function(p) {
+        return {
+          id: p.id, name: p.name, doc: p.doc, photoDataUrl: p.photoDataUrl,
+          descriptor: Array.from(p.desc),
+          descriptors: (p.descriptors || [p.desc]).map(function(d) { return Array.from(d); })
+        };
+      }))], { type: 'application/json' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'sentinela_backup.json'; a.click();
+    }
+
+    function importDB(e) {
+      var f = e.target.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = async function(evt) {
+        var a = JSON.parse(evt.target.result);
+        for (var i = 0; i < a.length; i++) {
+          var vec = a[i].descriptor || a[i].desc;
+          if (vec) await saveP({ id: a[i].id, name: a[i].name, doc: a[i].doc, photoDataUrl: a[i].photoDataUrl, desc: new Float32Array(vec) });
+        }
+        buildMatch(); renderDB(); log('Backup restaurado!', '#10b981');
+      };
+      r.readAsText(f);
+    }
+
+    async function rescueDB() {
+      var c = 0, names = ['SentinelaBiometriaDB', 'SentinelaV2_DB', 'SV21_DB'];
+      for (var i = 0; i < names.length; i++) {
+        await new Promise(function(r) {
+          var t = setTimeout(r, 1500);
+          try {
+            var q = indexedDB.open(names[i]);
+            q.onsuccess = function(e) {
+              var d = e.target.result;
+              var s = d.objectStoreNames.contains('pessoas') ? 'pessoas' : (d.objectStoreNames.contains('catalogados') ? 'catalogados' : (d.objectStoreNames.contains('cat') ? 'cat' : null));
+              if (!s) { clearTimeout(t); d.close(); return r(); }
+              d.transaction(s, 'readonly').objectStore(s).getAll().onsuccess = async function(ev) {
+                var list = ev.target.result || [];
+                for (var j = 0; j < list.length; j++) {
+                  var p = list[j], vec = p.descriptor || p.desc;
+                  if (p && p.name && vec) {
+                    await saveP({ id: p.id || ('R_' + Date.now() + '_' + j), name: p.name, doc: p.doc || 'Resgatado', photoDataUrl: p.photoDataUrl || '', desc: new Float32Array(vec) });
+                    c++;
+                  }
+                }
+                clearTimeout(t); d.close(); r();
+              };
+            };
+          } catch (e) { clearTimeout(t); r(); }
+        });
+      }
+      buildMatch(); renderDB();
+      log(c + ' indivíduo(s) recuperado(s) do banco!', '#10b981');
+    }
+  </script>
+</body>
+</html>
