@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENTINELA 10.4</title>
+  <title>SENTINELA 10.5</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body { background: #050811; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -127,10 +127,10 @@
 
   <header>
     <div class="brand">
-      <div class="brand-icon">10.4</div>
+      <div class="brand-icon">10.5</div>
       <div>
-        <div style="font-weight:800; font-size:14px; color:#fff; letter-spacing:0.5px;">SENTINELA 10.4</div>
-        <div style="font-size:11px; color:#94a3b8;">Vetor 512D + Fluxo Óptico + Visão Noturna CLAHE + Filtro Laplacian + Crop Contextual 15%</div>
+        <div style="font-weight:800; font-size:14px; color:#fff; letter-spacing:0.5px;">SENTINELA 10.5</div>
+        <div style="font-size:11px; color:#94a3b8;">Vetor 512D + Fluxo Óptico + CLAHE + Lote Inteligente (NOME_CPF_ARTIGO)</div>
       </div>
     </div>
 
@@ -164,7 +164,7 @@
         <div class="monitor-subcard">
           <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:800; color:#38bdf8;">
             <span id="plateFormatLabel">PLACA (CARRO/MOTO)</span>
-            <span id="plateConfidenceBadge" style="color:#10b981;">10.4 IA</span>
+            <span id="plateConfidenceBadge" style="color:#10b981;">10.5 IA</span>
           </div>
           <div id="mercosulPlateWidget" class="mercosul-plate">
             <div id="mercosulHeaderBar" class="mercosul-header"><span>MERCOSUL</span><span>BRASIL</span><span>BR</span></div>
@@ -339,9 +339,9 @@
       <div id="tabBanco" class="tab-pane hidden">
         <div class="card-panel" style="border-color:rgba(16,185,129,0.5);">
           <span style="font-weight:700; color:#10b981;">Cadastro Rápido (Arquivo ou Câmera Ao Vivo)</span>
-          <input type="text" id="sName" placeholder="Nome Completo (Ex: Max Bruno)">
-          <input type="text" id="sDoc" placeholder="CPF / RG / Prontuário">
-          <input type="file" id="sFile" accept="image/*" multiple style="font-size:11px; color:#94a3b8;">
+          <input type="text" id="sName" placeholder="Nome Completo (ou deixe vazio p/ ler do arquivo)">
+          <input type="text" id="sDoc" placeholder="CPF / RG / Artigo (ex: 012.345.678-99)">
+          <input type="file" id="sFile" accept="image/*" multiple style="font-size:11px; color:#94a3b8;" onchange="autoFillFromSelectedFiles(event)">
           <div style="display:flex; gap:6px;">
             <button type="button" class="btn-primary" style="flex:1;" onclick="addSingle()">Salvar por Foto</button>
             <button type="button" class="btn-success" style="flex:1;" onclick="enrollFromLiveCamera()">Vincular da Câmera</button>
@@ -349,6 +349,9 @@
         </div>
 
         <div class="card-panel">
+          <div style="font-size:10px; color:#94a3b8; line-height:1.35;">
+            💡 <strong style="color:#38bdf8;">Padrão Lote Inteligente:</strong> Salve a foto como <code style="color:#fcd34d;">NOME_CPF.png</code> ou <code style="color:#fcd34d;">NOME_CPF_ARTIGO.png</code> para preencher Nome e CPF sozinhos!
+          </div>
           <label class="btn-primary btn-label" style="padding:8px;">
             Importar Pasta de Indivíduos em Lote
             <input type="file" webkitdirectory directory multiple class="hidden" onchange="uploadBulk(event)">
@@ -454,8 +457,8 @@
           <img id="iEl" class="hidden" alt="Cena">
           <canvas id="hudCanvas"></canvas>
           <div id="emptyStg" style="padding:45px; text-align:center;">
-            <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">SENTINELA 10.4</div>
-            <p style="font-size:12px; color:#94a3b8; max-width:460px;">Motor 512D + Rastreamento por Fluxo Óptico + Visão Noturna CLAHE + Filtro Anti-Borrão Laplacian + Crop Contextual (+15% Orelha e Queixo).</p>
+            <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">SENTINELA 10.5</div>
+            <p style="font-size:12px; color:#94a3b8; max-width:460px;">Motor 512D + Rastreamento por Fluxo Óptico + Visão Noturna CLAHE + Filtro Anti-Borrão Laplacian + Lote Inteligente (NOME_CPF).</p>
           </div>
         </div>
 
@@ -1319,8 +1322,65 @@
       } catch (e) {}
     }
 
+    // Chave padrão vazia no código para passar na verificação de segurança do GitHub (fica salva no localStorage do navegador)
     var DEFAULT_VISION_KEY = '';
     var SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbweUcxIRlj_l3S_GwMgCykquMLSeHIQNutlYbNTTP_c0PflXJRuv9WVMRnVrClsqApj/exec';
+
+    // Fatiador Inteligente de Nome de Arquivo: extrai Nome, CPF/RG e Artigo/Observação separados por "_"
+    // Exemplos suportados:
+    // 1) "CARLOS HENRIQUE ROCHA DE ANDRADE_012.345.678-99.png" -> name: "CARLOS HENRIQUE ROCHA DE ANDRADE", doc: "012.345.678-99"
+    // 2) "CARLOS HENRIQUE_01234567899_Art33 Trafico.jpg" -> name: "CARLOS HENRIQUE", doc: "01234567899 • Art33 Trafico"
+    function parseSmartFilename(rawFilename) {
+      var base = String(rawFilename || '');
+      var slashIdx = Math.max(base.lastIndexOf('/'), base.lastIndexOf('\\'));
+      if (slashIdx >= 0) base = base.substring(slashIdx + 1);
+      var dotIdx = base.lastIndexOf('.');
+      if (dotIdx > 0) base = base.substring(0, dotIdx);
+
+      // Remove sufixos numéricos de cópia do sistema operacional como " (1)", " (2)" no final
+      base = base.replace(/\s*\(\d+\)\s*$/, '').trim();
+
+      if (base.indexOf('_') !== -1) {
+        var parts = base.split('_').map(function(p) { return p.trim(); }).filter(Boolean);
+        var personName = (parts[0] || 'Indivíduo').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+        var docPart = parts.length > 1 ? parts[1] : 'Pasta Drive';
+        var extraPart = parts.length > 2 ? parts.slice(2).join(' • ') : '';
+        var finalDoc = extraPart ? (docPart + ' • ' + extraPart) : docPart;
+        return {
+          name: personName,
+          doc: finalDoc || 'Pasta Drive',
+          hasCustomDoc: parts.length > 1
+        };
+      }
+
+      // Fallback caso o usuário tenha separado Nome e CPF com hífen: "CARLOS HENRIQUE - 012.345.678-99"
+      var cpfDashMatch = base.match(/^(.+?)\s+-\s+([0-9.\-]{7,18}.*)$/);
+      if (cpfDashMatch) {
+        return {
+          name: cpfDashMatch[1].replace(/\s+/g, ' ').trim(),
+          doc: cpfDashMatch[2].trim(),
+          hasCustomDoc: true
+        };
+      }
+
+      return {
+        name: base.replace(/-/g, ' ').replace(/\s+/g, ' ').trim() || 'Indivíduo',
+        doc: 'Pasta Drive',
+        hasCustomDoc: false
+      };
+    }
+
+    function autoFillFromSelectedFiles(e) {
+      var fs = e && e.target && e.target.files;
+      if (!fs || !fs.length) return;
+      var parsed = parseSmartFilename(fs[0].name);
+      if (parsed.name && !getEl('sName').value.trim()) {
+        getEl('sName').value = parsed.name;
+      }
+      if (parsed.hasCustomDoc && !getEl('sDoc').value.trim()) {
+        getEl('sDoc').value = parsed.doc;
+      }
+    }
 
     var DEF_P = 'var url = "' + SHEETS_API_URL + '?tipo=PLACA&placa=" + encodeURIComponent(plate) + "&q=" + encodeURIComponent(plate);\nvar res = await fetch(url);\nreturn await res.json();';
     var DEF_F = 'var url = "' + SHEETS_API_URL + '?tipo=PESSOA&nome=" + encodeURIComponent(person.name || "") + "&cpf=" + encodeURIComponent(person.doc || "") + "&q=" + encodeURIComponent(person.name || "") + "&doc=" + encodeURIComponent(person.doc || "");\nvar res = await fetch(url);\nreturn await res.json();';
@@ -1645,7 +1705,7 @@
 
       loadAdaptiveMemory();
       renderHistory();
-      log('Sentinela 10.4 pronto: Vetor 512D + Fluxo Óptico + CLAHE Noturno + Filtro Anti-Borrão Laplacian + Crop +15%.', '#10b981');
+      log('Sentinela 10.5 pronto: Vetor 512D + Fluxo Óptico + CLAHE + Lote Inteligente (NOME_CPF_ARTIGO).', '#10b981');
       initDB();
       refreshCams();
       setTimeout(function() { ensureAIReady(); }, 250);
@@ -1798,9 +1858,9 @@
 
         aiLoaded = true;
         buildMatch();
-        badge.innerText = 'IA 10.4 (512D)';
+        badge.innerText = 'IA 10.5 (512D)';
         badge.style.color = '#10b981';
-        log('Motores 10.4 prontos! Vetor 512D + CLAHE + Fluxo Óptico ativos com ' + catDb.length + ' indivíduo(s).', '#10b981');
+        log('Motores 10.5 prontos! Vetor 512D + CLAHE + Fluxo Óptico ativos com ' + catDb.length + ' indivíduo(s).', '#10b981');
       } catch (e) {
         badge.innerText = 'Erro Rede IA';
         log('Aviso IA: ' + e.message, '#fb7185');
@@ -2990,7 +3050,7 @@
         existing.desc512 = hyper512;
         existing.centroid512 = computeCentroidDescriptor(existing.descriptors512);
         existing.centroid = extractCore128FromAny(existing.centroid512);
-        if (p.doc && p.doc !== 'Manual') existing.doc = p.doc;
+        if (p.doc && p.doc !== 'Manual' && p.doc !== 'Pasta Drive') existing.doc = p.doc;
         existing.photoDataUrl = p.photoDataUrl || existing.photoDataUrl;
         p = existing;
       } else {
@@ -3120,38 +3180,55 @@
       var fs = Array.from(e.target.files).filter(function(f) { return f.type.startsWith('image/'); });
       if (!fs.length) return;
       getEl('bulkProg').classList.remove('hidden');
+      var withDocCount = 0;
       for (var i = 0; i < fs.length; i++) {
-        var rawN = fs[i].name;
-        var dot = rawN.lastIndexOf('.');
-        var n = (dot > 0 ? rawN.substring(0, dot) : rawN).split('_').join(' ').split('-').join(' ');
-        getEl('bulkTxt').innerText = n; getEl('bulkCnt').innerText = (i + 1) + '/' + fs.length;
+        var parsed = parseSmartFilename(fs[i].name);
+        if (parsed.hasCustomDoc) withDocCount++;
+        getEl('bulkTxt').innerText = parsed.name + (parsed.hasCustomDoc ? (' [' + parsed.doc + ']') : '');
+        getEl('bulkCnt').innerText = (i + 1) + '/' + fs.length;
         var b = await getBio(fs[i]);
-        if (b) await saveP({ id: 'C_' + Date.now() + '_' + i, name: n, doc: 'Pasta Drive', photoDataUrl: b.thumb, desc: b.desc, desc512: b.desc512 });
+        if (b) {
+          await saveP({
+            id: 'C_' + Date.now() + '_' + i,
+            name: parsed.name,
+            doc: parsed.doc,
+            photoDataUrl: b.thumb,
+            desc: b.desc,
+            desc512: b.desc512
+          });
+        }
         if (i % 5 === 0) renderDB();
         await sleep(20);
       }
       buildMatch(); renderDB();
       getEl('bulkProg').classList.add('hidden');
-      log('Pasta facial importada em 512D com Crop Contextual!', '#10b981');
+      log('Pasta facial importada em 512D! (' + fs.length + ' fotos processadas, ' + withDocCount + ' com CPF/Prontuário extraído do nome do arquivo).', '#10b981');
     }
 
     async function addSingle() {
       await ensureAIReady();
-      var n = getEl('sName').value.trim(), d = getEl('sDoc').value.trim() || 'Manual', fs = getEl('sFile').files;
-      if (!n || !fs.length) { log('Preencha o Nome e escolha a foto.', '#fb7185'); return; }
+      var typedName = getEl('sName').value.trim();
+      var typedDoc = getEl('sDoc').value.trim();
+      var fs = getEl('sFile').files;
+      if (!fs.length) { log('Escolha pelo menos uma foto.', '#fb7185'); return; }
       var savedCount = 0;
       for (var i = 0; i < fs.length; i++) {
+        var parsed = parseSmartFilename(fs[i].name);
+        var finalName = (fs.length === 1 && typedName) ? typedName : (parsed.name || typedName);
+        var finalDoc = typedDoc || (parsed.hasCustomDoc ? parsed.doc : 'Manual');
+        if (!finalName) continue;
         var b = await getBio(fs[i]);
         if (b) {
-          await saveP({ id: 'M_' + Date.now() + '_' + i, name: n, doc: d, photoDataUrl: b.thumb, desc: b.desc, desc512: b.desc512 });
+          await saveP({ id: 'M_' + Date.now() + '_' + i, name: finalName, doc: finalDoc, photoDataUrl: b.thumb, desc: b.desc, desc512: b.desc512 });
           savedCount++;
         }
       }
       if (!savedCount) { log('Rosto não detectado na foto enviada.', '#fb7185'); return; }
       buildMatch(); renderDB();
       getEl('sName').value = '';
+      getEl('sDoc').value = '';
       resetFaceLockManual();
-      log('Biometria 512D salva e conectada à planilha!', '#10b981');
+      log('Biometria 512D salva com Nome e CPF vinculados!', '#10b981');
     }
 
     function renderDB() {
